@@ -1,0 +1,35 @@
+{
+  "name": "wandora",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts",
+    "test:smoke": "tsx --env-file=.env.local scripts/smoke-auth.ts",
+    "db:seed": "tsx --env-file=.env.local scripts/seed-admin.ts"
+  },
+  "dependencies": {
+    "next": "^16.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "neo4j-driver": "^6.0.0",
+    "redis": "^5.0.0",
+    "jose": "^6.0.0",
+    "zod": "^4.0.0",
+    "server-only": "^0.0.1",
+    "@fontsource/geist": "^5.2.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.0",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^16.0.0",
+    "tsx": "^4.20.0"
+  }
+}
