@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { hashPassword, verifyPassword } from '../src/features/auth/server/password';
-import { createUserSchema, loginSchema } from '../src/features/auth/schemas';
+import { loginSchema } from '../src/features/auth/schemas';
+import { createUserSchema } from '../src/features/users/schemas';
 test('password hashes are salted and reject wrong passwords', async () => {
   const first = await hashPassword('valid-password-for-wandora');
   const second = await hashPassword('valid-password-for-wandora');
@@ -11,7 +12,11 @@ test('password hashes are salted and reject wrong passwords', async () => {
   assert.equal(await verifyPassword('anything', 'malformed'), false);
 });
 test('user input normalizes email and rejects weak passwords and invalid roles', () => {
-  const input = { email: 'Admin@Wandora.local', name: 'Wandora Admin', password: 'strong-password-123' };
+  const input = {
+    email: 'Admin@Wandora.local',
+    name: 'Wandora Admin',
+    password: 'strong-password-123',
+  };
   assert.equal(createUserSchema.parse(input).email, 'admin@wandora.local');
   assert.equal(createUserSchema.parse(input).role, 'user');
   assert.equal(createUserSchema.safeParse({ ...input, password: 'short' }).success, false);

@@ -1,25 +1,72 @@
 'use client';
-import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
+import { Alert, Stack, Typography } from '@mui/material';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import type { z } from 'zod';
+import { toast } from 'sonner';
 import { api } from '@/lib/api-client';
+import { FormTextField } from '@/components/forms/form-text-field';
+import { SubmitButton } from '@/components/forms/submit-button';
+import { loginSchema } from '../schemas';
+import Link from 'next/link';
+import { Link as MuiLink } from '@mui/material';
+import { FormPasswordField } from '@/components/forms/form-password-field';
 export function LoginForm() {
   const router = useRouter();
-  const [error, setError] = useState('');
-  const [pending, setPending] = useState(false);
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); setPending(true); setError('');
-    const data = new FormData(event.currentTarget);
+  const {
+    control,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm<z.input<typeof loginSchema>, unknown, z.output<typeof loginSchema>>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: '', password: '' },
+  });
+  const submit = handleSubmit(async (data) => {
     try {
-      await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ email: data.get('email'), password: data.get('password') }) });
-      router.push('/dashboard'); router.refresh();
-    } catch (error) { setError(error instanceof Error ? error.message : 'Không thể đăng nhập.'); }
-    finally { setPending(false); }
-  }
-  return <form onSubmit={submit} className="form" aria-busy={pending}>
-    <label htmlFor="email">Email<input id="email" name="email" type="email" autoComplete="username" maxLength={254} required placeholder="ban@example.com" /></label>
-    <label htmlFor="password">Mật khẩu<input id="password" name="password" type="password" autoComplete="current-password" maxLength={128} required /></label>
-    {error && <p className="error" role="alert">{error}</p>}
-    <button disabled={pending} type="submit">{pending ? 'Đang đăng nhập…' : 'Đăng nhập'}</button>
-    <p className="muted small">Chưa có tài khoản? Liên hệ quản trị viên để được cấp quyền truy cập.</p>
-  </form>;
+      await api('/api/auth/login', { method: 'POST', body: JSON.stringify(data) });
+      toast.success('Đăng nhập thành công.');
+      router.push('/dashboard');
+      router.refresh();
+    } catch (error) {
+      setError('root', {
+        message: error instanceof Error ? error.message : 'Không thể đăng nhập.',
+      });
+    }
+  });
+  return (
+    <Stack component="form" noValidate onSubmit={submit} spacing={3} aria-busy={isSubmitting}>
+      <FormTextField
+        control={control}
+        name="email"
+        label="Email"
+        type="email"
+        autoComplete="username"
+        required
+        slotProps={{ htmlInput: { maxLength: 254 } }}
+      />
+      <FormPasswordField
+        control={control}
+        name="password"
+        label="Mật khẩu"
+        autoComplete="current-password"
+        required
+      />
+      <MuiLink component={Link} href="/forgot-password" sx={{ alignSelf: 'flex-end' }}>
+        Quên mật khẩu?
+      </MuiLink>
+      {errors.root && (
+        <Alert severity="error" role="alert">
+          {errors.root.message}
+        </Alert>
+      )}
+      <SubmitButton pending={isSubmitting} pendingLabel="Đang đăng nhập…">
+        Đăng nhập
+      </SubmitButton>
+      <Typography variant="body2" color="text.secondary">
+        Chưa có tài khoản? Liên hệ quản trị viên để được cấp quyền truy cập.
+      </Typography>
+    </Stack>
+  );
 }
