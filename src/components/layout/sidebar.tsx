@@ -23,6 +23,11 @@ import {
   CompassIcon,
   XIcon,
   UserCircleIcon,
+  MapPinIcon,
+  MagnifyingGlassIcon,
+  BedIcon,
+  ForkKnifeIcon,
+  TicketIcon,
 } from '@phosphor-icons/react';
 import { useUiStore } from '@/stores/ui-store';
 import { Brand } from './brand';
@@ -47,12 +52,18 @@ export function Sidebar({
   const links = admin
     ? [
         { href: '/admin', label: 'Tổng quan', icon: HouseIcon },
+        { href: '/explore', label: 'Khám phá', icon: MagnifyingGlassIcon },
         { href: '/admin/users', label: 'Người dùng', icon: UsersIcon },
+        { href: '/admin/places', label: 'Địa điểm', icon: MapPinIcon },
+        { href: '/admin/hotels', label: 'Khách sạn', icon: BedIcon },
+        { href: '/admin/restaurants', label: 'Nhà hàng', icon: ForkKnifeIcon },
+        { href: '/admin/services', label: 'Dịch vụ', icon: TicketIcon },
         { href: '/admin/components', label: 'Component mẫu', icon: SquaresFourIcon },
         { href: '/dashboard', label: 'Không gian cá nhân', icon: CompassIcon },
         { href: '/profile', label: 'Tài khoản', icon: UserCircleIcon },
       ]
     : [
+        { href: '/explore', label: 'Khám phá', icon: MagnifyingGlassIcon },
         { href: '/dashboard', label: 'Không gian cá nhân', icon: CompassIcon },
         { href: '/profile', label: 'Tài khoản', icon: UserCircleIcon },
       ];
