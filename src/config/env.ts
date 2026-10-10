@@ -9,6 +9,7 @@ const schema = z.object({
   NEO4J_USERNAME: z.string().min(1),
   NEO4J_PASSWORD: z.string().min(1),
   REDIS_URL: z.url(),
+  MONGODB_URI: z.string().min(1),
 });
 export function getEnv() {
   return schema.parse(process.env);
