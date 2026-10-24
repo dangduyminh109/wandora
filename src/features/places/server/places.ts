@@ -5,6 +5,7 @@ import { cache, CACHE_TTL_SECONDS } from '@/lib/cache';
 import { getMongo } from '@/lib/db/mongodb';
 import { HttpError } from '@/lib/http';
 import { slugify } from '@/lib/slug';
+import { deletePlaceNode, upsertPlaceNode } from './graph';
 import type { placeInputSchema, placeUpdateSchema, placesQuerySchema } from '../schemas';
 import type { Place } from '../types';
 
@@ -47,7 +48,11 @@ export async function createPlace(input: z.output<typeof placeInputSchema>) {
     try {
       const { insertedId } = await collection.insertOne(doc);
       await cache.invalidate();
-      return toPlace({ ...doc, _id: insertedId });
+      const created = toPlace({ ...doc, _id: insertedId });
+      await upsertPlaceNode(created).catch((err) =>
+        console.error('Lỗi đồng bộ Place sang Neo4j:', err),
+      );
+      return created;
     } catch (error) {
       if (!isDuplicateKey(error)) throw error;
     }
@@ -124,7 +129,11 @@ export async function updatePlace(id: string, input: z.output<typeof placeUpdate
   );
   if (!doc) throw new HttpError(404, 'Không tìm thấy địa điểm.');
   await cache.invalidate();
-  return toPlace(doc);
+  const updated = toPlace(doc);
+  await upsertPlaceNode(updated).catch((err) =>
+    console.error('Lỗi đồng bộ Place sang Neo4j:', err),
+  );
+  return updated;
 }
 
 // Xóa địa điểm kèm dữ liệu con (khách sạn, nhà hàng, dịch vụ, đánh giá) để không bị mồ côi.
@@ -137,6 +146,9 @@ export async function deletePlace(id: string) {
     ['hotels', 'restaurants', 'services', 'reviews'].map((name) =>
       db.collection(name).deleteMany({ placeId }),
     ),
+  );
+  await deletePlaceNode(id).catch((err) =>
+    console.error('Lỗi xóa Place khỏi Neo4j:', err),
   );
   await cache.invalidate();
 }

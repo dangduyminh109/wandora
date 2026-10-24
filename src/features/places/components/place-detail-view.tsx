@@ -7,6 +7,9 @@ import type { CatalogItem } from '@/features/catalog/server/repository';
 import type { HotelInput, RestaurantInput, ServiceInput } from '@/features/catalog/schemas';
 import { categoryLabel } from '../constants';
 import type { Place } from '../types';
+import { FavoriteButton } from './favorite-button';
+import { PlaceReviews } from './place-reviews';
+import { RelatedPlaces } from './related-places';
 
 const priceText = (level: number) => '₫'.repeat(level);
 const serviceTypeLabel: Record<string, string> = {
@@ -32,14 +35,17 @@ export function PlaceDetailView({ place, hotels, restaurants, services }: Props)
         description={`${place.region}${place.address && place.address !== place.region ? ' · ' + place.address : ''}`}
         breadcrumbs={[{ label: 'Khám phá', href: '/explore' }, { label: place.name }]}
         action={
-          <Button
-            variant="outlined"
-            href={`https://www.google.com/maps?q=${lat},${lng}`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Xem trên bản đồ
-          </Button>
+          <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+            <FavoriteButton placeId={place.id} />
+            <Button
+              variant="outlined"
+              href={`https://www.google.com/maps?q=${lat},${lng}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Xem trên bản đồ
+            </Button>
+          </Stack>
         }
       />
       <Stack sx={{ gap: 3 }}>
@@ -93,6 +99,12 @@ export function PlaceDetailView({ place, hotels, restaurants, services }: Props)
             />
           ))}
         </Section>
+
+        {/* Đánh giá và bình luận (FR08 - MongoDB & Neo4j) */}
+        <PlaceReviews placeId={place.id} ratingAvg={place.ratingAvg} ratingCount={place.ratingCount} />
+
+        {/* Địa điểm tương tự (FR14 - Neo4j Graph traversal) */}
+        <RelatedPlaces placeId={place.id} />
       </Stack>
     </>
   );

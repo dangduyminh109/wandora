@@ -17,6 +17,8 @@
     "db:ping-mongo": "tsx --env-file=.env.local scripts/ping-mongo.ts",
     "db:mongo-indexes": "tsx --env-file=.env.local scripts/create-mongo-indexes.ts",
     "db:seed-travel": "tsx --env-file=.env.local scripts/seed-travel.ts",
+    "db:sync-neo4j": "tsx --env-file=.env.local scripts/sync-places-neo4j.ts",
+    "db:seed-interactions": "tsx --conditions react-server --env-file=.env.local scripts/seed-interactions.ts",
     "bench:cache": "tsx --conditions react-server --env-file=.env.local scripts/bench-cache.ts"
   },
   "dependencies": {

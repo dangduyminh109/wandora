@@ -28,11 +28,14 @@ import {
   BedIcon,
   ForkKnifeIcon,
   TicketIcon,
+  HeartIcon,
 } from '@phosphor-icons/react';
 import { useUiStore } from '@/stores/ui-store';
 import { Brand } from './brand';
+
 export const SIDEBAR_WIDTH = 256;
 export const SIDEBAR_COLLAPSED_WIDTH = 80;
+
 export function Sidebar({
   admin = false,
   footer,
@@ -49,10 +52,12 @@ export function Sidebar({
   const close = useUiStore((state) => state.closeSidebar);
   const collapsed = useUiStore((state) => state.sidebarCollapsed);
   const width = collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH;
+
   const links = admin
     ? [
         { href: '/admin', label: 'Tổng quan', icon: HouseIcon },
         { href: '/explore', label: 'Khám phá', icon: MagnifyingGlassIcon },
+        { href: '/favorites', label: 'Yêu thích', icon: HeartIcon },
         { href: '/admin/users', label: 'Người dùng', icon: UsersIcon },
         { href: '/admin/places', label: 'Địa điểm', icon: MapPinIcon },
         { href: '/admin/hotels', label: 'Khách sạn', icon: BedIcon },
@@ -64,9 +69,11 @@ export function Sidebar({
       ]
     : [
         { href: '/explore', label: 'Khám phá', icon: MagnifyingGlassIcon },
+        { href: '/favorites', label: 'Yêu thích', icon: HeartIcon },
         { href: '/dashboard', label: 'Không gian cá nhân', icon: CompassIcon },
         { href: '/profile', label: 'Tài khoản', icon: UserCircleIcon },
       ];
+
   function content(mini: boolean, mobile: boolean) {
     return (
       <Box
