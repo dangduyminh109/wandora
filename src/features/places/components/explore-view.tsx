@@ -22,6 +22,7 @@ import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { api } from '@/lib/api-client';
 import { categoryLabel, placeCategories } from '../constants';
 import type { Place } from '../types';
+import { FavoriteButton } from './favorite-button';
 
 const PAGE_SIZE = 12;
 const sortOptions = [
@@ -99,12 +100,17 @@ export function ExploreView() {
         title="Khám phá địa điểm"
         description="Tìm điểm đến theo tên, mô tả, thẻ; lọc theo danh mục, khu vực và đánh giá."
       />
-      <Stack direction={{ xs: 'column', md: 'row' }} sx={{ gap: 2, mb: 3 }}>
+
+      <Stack
+        direction={{ xs: 'column', md: 'row' }}
+        spacing={2}
+        sx={{ mb: 3, alignItems: { md: 'center' } }}
+      >
         <TextField
           label="Tìm kiếm"
-          placeholder="Ví dụ: biển, Đà Lạt, hang động"
+          placeholder="Nhập tên, mô tả hoặc thẻ…"
           value={search}
-          onChange={(e) => change(() => setSearch(e.target.value))}
+          onChange={(e) => setSearch(e.target.value)}
           sx={{ flex: 2 }}
         />
         <TextField
@@ -142,10 +148,10 @@ export function ExploreView() {
           onChange={(e) => change(() => setMinRating(e.target.value))}
           sx={{ flex: 1, minWidth: 130 }}
         >
-          <MenuItem value="0">Mọi mức</MenuItem>
-          <MenuItem value="3">3★ trở lên</MenuItem>
-          <MenuItem value="4">4★ trở lên</MenuItem>
-          <MenuItem value="4.5">4.5★ trở lên</MenuItem>
+          <MenuItem value="0">Tất cả</MenuItem>
+          <MenuItem value="4.5">★ 4.5 trở lên</MenuItem>
+          <MenuItem value="4">★ 4.0 trở lên</MenuItem>
+          <MenuItem value="3">★ 3.0 trở lên</MenuItem>
         </TextField>
         <TextField
           select
@@ -220,14 +226,17 @@ function Grid({ children, sx }: { children: React.ReactNode; sx?: object }) {
 
 function PlaceCard({ place }: { place: Place }) {
   return (
-    <MuiCard variant="outlined">
+    <MuiCard variant="outlined" sx={{ position: 'relative' }}>
+      <Box sx={{ position: 'absolute', top: 18, right: 18, zIndex: 2 }}>
+        <FavoriteButton placeId={place.id} size="small" />
+      </Box>
       <CardActionArea component={Link} href={`/explore/${place.slug}`} sx={{ height: '100%' }}>
         <CardContent sx={{ p: 3 }}>
-          <Stack direction="row" sx={{ justifyContent: 'space-between', gap: 1, mb: 1 }}>
+          <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', gap: 1, mb: 1, pr: 4.5 }}>
             <Badge label={categoryLabel(place.category)} />
             <Stack direction="row" sx={{ alignItems: 'center', gap: 0.5 }}>
-              <StarIcon size={16} weight="fill" aria-hidden="true" />
-              <Typography variant="body2">
+              <StarIcon size={16} weight="fill" aria-hidden="true" color="#eab308" />
+              <Typography variant="body2" sx={{ fontWeight: 600 }}>
                 {place.ratingCount > 0 ? place.ratingAvg.toFixed(1) : 'Mới'}
               </Typography>
             </Stack>
