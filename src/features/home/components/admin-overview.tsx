@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   Alert,
@@ -55,45 +55,55 @@ export function AdminOverview() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchStats = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const [placesRes, hotelsRes, restRes, servRes, usersRes, activityRes] = await Promise.allSettled([
-        api<{ places: Place[]; total: number }>('/api/places?pageSize=5&sortBy=createdAt&direction=desc'),
-        api<{ total: number }>('/api/hotels?pageSize=1'),
-        api<{ total: number }>('/api/restaurants?pageSize=1'),
-        api<{ total: number }>('/api/services?pageSize=1'),
-        api<{ total: number }>('/api/users?pageSize=1'),
-        api<{ totalEvents?: number }>('/api/activity/stats?days=7'),
-      ]);
+  const [reloadKey, setReloadKey] = useState(0);
 
-      const placesData = placesRes.status === 'fulfilled' ? placesRes.value : { places: [], total: 0 };
-      const hotelsData = hotelsRes.status === 'fulfilled' ? hotelsRes.value : { total: 0 };
-      const restData = restRes.status === 'fulfilled' ? restRes.value : { total: 0 };
-      const servData = servRes.status === 'fulfilled' ? servRes.value : { total: 0 };
-      const usersData = usersRes.status === 'fulfilled' ? usersRes.value : { total: 0 };
-      const activityData = activityRes.status === 'fulfilled' ? activityRes.value : { totalEvents: 0 };
-
-      setStats({
-        places: placesData.total,
-        hotels: hotelsData.total,
-        restaurants: restData.total,
-        services: servData.total,
-        users: usersData.total,
-        activityCount: activityData.totalEvents || 0,
-        recentPlaces: placesData.places || [],
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Không thể tải số liệu thống kê.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
+  // Trạng thái ban đầu đã là loading=true, error=null; nút làm mới tự đặt lại rồi tăng reloadKey.
   useEffect(() => {
-    void fetchStats();
-  }, [fetchStats]);
+    let active = true;
+    (async () => {
+      try {
+        const [placesRes, hotelsRes, restRes, servRes, usersRes, activityRes] =
+          await Promise.allSettled([
+            api<{ places: Place[]; total: number }>(
+              '/api/places?pageSize=5&sortBy=createdAt&direction=desc',
+            ),
+            api<{ total: number }>('/api/hotels?pageSize=1'),
+            api<{ total: number }>('/api/restaurants?pageSize=1'),
+            api<{ total: number }>('/api/services?pageSize=1'),
+            api<{ total: number }>('/api/users?pageSize=1'),
+            api<{ totalEvents?: number }>('/api/activity/stats?days=7'),
+          ]);
+
+        const placesData =
+          placesRes.status === 'fulfilled' ? placesRes.value : { places: [], total: 0 };
+        const hotelsData = hotelsRes.status === 'fulfilled' ? hotelsRes.value : { total: 0 };
+        const restData = restRes.status === 'fulfilled' ? restRes.value : { total: 0 };
+        const servData = servRes.status === 'fulfilled' ? servRes.value : { total: 0 };
+        const usersData = usersRes.status === 'fulfilled' ? usersRes.value : { total: 0 };
+        const activityData =
+          activityRes.status === 'fulfilled' ? activityRes.value : { totalEvents: 0 };
+
+        if (!active) return;
+        setStats({
+          places: placesData.total,
+          hotels: hotelsData.total,
+          restaurants: restData.total,
+          services: servData.total,
+          users: usersData.total,
+          activityCount: activityData.totalEvents || 0,
+          recentPlaces: placesData.places || [],
+        });
+      } catch (err) {
+        if (active)
+          setError(err instanceof Error ? err.message : 'Không thể tải số liệu thống kê.');
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [reloadKey]);
 
   const cards = [
     {
@@ -147,7 +157,11 @@ export function AdminOverview() {
           <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center' }}>
             <Tooltip title="Làm mới số liệu">
               <IconButton
-                onClick={fetchStats}
+                onClick={() => {
+                  setLoading(true);
+                  setError(null);
+                  setReloadKey((key) => key + 1);
+                }}
                 disabled={loading}
                 aria-label="Làm mới"
                 sx={{ border: '1px solid #e2ecf3' }}
@@ -196,7 +210,10 @@ export function AdminOverview() {
                 }}
               >
                 <Box>
-                  <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                  <Stack
+                    direction="row"
+                    sx={{ justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}
+                  >
                     <Box
                       sx={{
                         p: 1.25,
@@ -209,13 +226,19 @@ export function AdminOverview() {
                       <Icon size={24} weight="duotone" />
                     </Box>
                   </Stack>
-                  <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 600, mb: 0.5 }}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ fontWeight: 600, mb: 0.5 }}
+                  >
                     {c.title}
                   </Typography>
                   {loading ? (
                     <Skeleton width={80} height={42} />
                   ) : (
-                    <Typography sx={{ fontSize: '2rem', fontWeight: 800, color: '#163047', lineHeight: 1.1 }}>
+                    <Typography
+                      sx={{ fontSize: '2rem', fontWeight: 800, color: '#163047', lineHeight: 1.1 }}
+                    >
                       {c.count.toLocaleString('vi-VN')}
                     </Typography>
                   )}
@@ -313,27 +336,49 @@ export function AdminOverview() {
                 <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Khu vực</TableCell>
                 <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Đánh giá</TableCell>
                 <TableCell sx={{ fontWeight: 700, color: '#475569' }}>Ngày tạo</TableCell>
-                <TableCell align="right" sx={{ fontWeight: 700, color: '#475569' }}>Hành động</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 700, color: '#475569' }}>
+                  Hành động
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {loading ? (
                 Array.from({ length: 4 }).map((_, i) => (
                   <TableRow key={i}>
-                    <TableCell><Skeleton width={180} /></TableCell>
-                    <TableCell><Skeleton width={80} /></TableCell>
-                    <TableCell><Skeleton width={100} /></TableCell>
-                    <TableCell><Skeleton width={60} /></TableCell>
-                    <TableCell><Skeleton width={90} /></TableCell>
-                    <TableCell align="right"><Skeleton width={60} sx={{ ml: 'auto' }} /></TableCell>
+                    <TableCell>
+                      <Skeleton width={180} />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton width={80} />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton width={100} />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton width={60} />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton width={90} />
+                    </TableCell>
+                    <TableCell align="right">
+                      <Skeleton width={60} sx={{ ml: 'auto' }} />
+                    </TableCell>
                   </TableRow>
                 ))
               ) : stats?.recentPlaces.length ? (
                 stats.recentPlaces.map((place) => (
-                  <TableRow key={place.id} hover sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                  <TableRow
+                    key={place.id}
+                    hover
+                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  >
                     <TableCell>
-                      <Typography sx={{ fontWeight: 600, color: '#163047' }}>{place.name}</Typography>
-                      <Typography variant="caption" color="text.secondary">/{place.slug}</Typography>
+                      <Typography sx={{ fontWeight: 600, color: '#163047' }}>
+                        {place.name}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        /{place.slug}
+                      </Typography>
                     </TableCell>
                     <TableCell>
                       <Badge label={categoryLabel(place.category)} />

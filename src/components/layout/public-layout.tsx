@@ -13,19 +13,15 @@ const isHeroRoute = (pathname: string) => pathname === '/';
 export function PublicLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const hero = isHeroRoute(pathname);
-  const [scrolled, setScrolled] = useState(false);
+  const [heroScrolled, setHeroScrolled] = useState(false);
   const [currentUser, setCurrentUser] = useState<{ name: string; role: string } | null>(null);
 
   useEffect(() => {
-    if (!hero) {
-      setScrolled(true);
-    } else {
-      setScrolled(false);
-      const handler = () => setScrolled(window.scrollY > 20);
-      handler();
-      window.addEventListener('scroll', handler, { passive: true });
-      return () => window.removeEventListener('scroll', handler);
-    }
+    if (!hero) return;
+    const handler = () => setHeroScrolled(window.scrollY > 20);
+    handler();
+    window.addEventListener('scroll', handler, { passive: true });
+    return () => window.removeEventListener('scroll', handler);
   }, [hero]);
 
   useEffect(() => {
@@ -42,7 +38,8 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
     };
   }, [pathname]);
 
-  const headerSolid = scrolled;
+  // Trang không có hero luôn dùng header đặc; trang chủ đổi khi cuộn.
+  const headerSolid = !hero || heroScrolled;
 
   return (
     <Box sx={{ minHeight: '100dvh', bgcolor: 'background.paper', display: 'flex', flexDirection: 'column' }}>
