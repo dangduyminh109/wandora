@@ -1,5 +1,5 @@
 'use client';
-import { Box, Button, Divider, Stack, Typography } from '@mui/material';
+import { Box, Button, Container, Divider, Stack, Typography } from '@mui/material';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { PageHeader } from '@/components/ui/page-header';
@@ -7,6 +7,7 @@ import type { CatalogItem } from '@/features/catalog/server/repository';
 import type { HotelInput, RestaurantInput, ServiceInput } from '@/features/catalog/schemas';
 import { categoryLabel } from '../constants';
 import type { Place } from '../types';
+import { PlaceViewTracker } from '@/features/activity/components/place-view-tracker';
 
 const priceText = (level: number) => '₫'.repeat(level);
 const serviceTypeLabel: Record<string, string> = {
@@ -26,7 +27,8 @@ type Props = {
 export function PlaceDetailView({ place, hotels, restaurants, services }: Props) {
   const [lng, lat] = place.location.coordinates;
   return (
-    <>
+    <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
+      <PlaceViewTracker placeId={place.id} />
       <PageHeader
         title={place.name}
         description={`${place.region}${place.address && place.address !== place.region ? ' · ' + place.address : ''}`}
@@ -94,7 +96,7 @@ export function PlaceDetailView({ place, hotels, restaurants, services }: Props)
           ))}
         </Section>
       </Stack>
-    </>
+    </Container>
   );
 }
 

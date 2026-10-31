@@ -28,6 +28,7 @@ import {
   BedIcon,
   ForkKnifeIcon,
   TicketIcon,
+  ClockCounterClockwiseIcon,
 } from '@phosphor-icons/react';
 import { useUiStore } from '@/stores/ui-store';
 import { Brand } from './brand';
@@ -61,11 +62,13 @@ export function Sidebar({
         { href: '/admin/components', label: 'Component mẫu', icon: SquaresFourIcon },
         { href: '/dashboard', label: 'Không gian cá nhân', icon: CompassIcon },
         { href: '/profile', label: 'Tài khoản', icon: UserCircleIcon },
+        { href: '/activity', label: 'Lịch sử hoạt động', icon: ClockCounterClockwiseIcon },
       ]
     : [
         { href: '/explore', label: 'Khám phá', icon: MagnifyingGlassIcon },
         { href: '/dashboard', label: 'Không gian cá nhân', icon: CompassIcon },
         { href: '/profile', label: 'Tài khoản', icon: UserCircleIcon },
+        { href: '/activity', label: 'Lịch sử hoạt động', icon: ClockCounterClockwiseIcon },
       ];
   function content(mini: boolean, mobile: boolean) {
     return (

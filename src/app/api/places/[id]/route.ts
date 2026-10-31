@@ -8,7 +8,6 @@ type Context = { params: Promise<{ id: string }> };
 
 export async function GET(_request: Request, context: Context) {
   return handleApi(async () => {
-    await requireUser();
     const id = placeIdSchema.parse((await context.params).id);
     return NextResponse.json({ place: await getPlace(id) });
   });

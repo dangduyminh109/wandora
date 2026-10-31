@@ -76,4 +76,4 @@ Neo4j + Redis chạy mặc định. MongoDB được chuẩn bị trong profile 
 docker compose --env-file .env.local --profile travel --profile analytics up -d
 ```
 
-Các container chỉ bind loopback; compose dành cho local development. Chưa có repository, schema hay CRUD cho MongoDB/Cassandra. Xem [docs/project-plan.md](docs/project-plan.md) để biết các giả định và việc tiếp theo. GitHub remote: https://github.com/dangduyminh109/wandora.git. Chưa push theo yêu cầu.
+Các container chỉ bind loopback; compose dành cho local development. MongoDB đã có CRUD địa điểm, khách sạn, nhà hàng, dịch vụ và cache Redis. Cassandra lưu lịch sử xem/tìm kiếm, có API thống kê cá nhân và trang `/activity`. Sau khi bật profile analytics, chạy `npm run db:init-cassandra`. Xem [docs/activity-cassandra.md](docs/activity-cassandra.md) để biết schema, cách demo, kiểm thử và hợp đồng dữ liệu cho phần đề xuất Neo4j.

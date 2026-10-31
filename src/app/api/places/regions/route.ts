@@ -5,7 +5,6 @@ import { listRegions } from '@/features/places/server/places';
 
 export async function GET() {
   return handleApi(async () => {
-    await requireUser();
     return NextResponse.json({ regions: await listRegions() });
   });
 }

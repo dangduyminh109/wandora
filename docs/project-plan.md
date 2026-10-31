@@ -19,6 +19,8 @@
 
 ## Next milestones
 
+> Cập nhật triển khai: MongoDB CRUD và Redis cache đã có. Cassandra đã có module lịch sử, thống kê cá nhân, trang `/activity`, script khởi tạo và kiểm thử. Xem `docs/activity-cassandra.md`. Danh sách dưới đây giữ lại quyết định ban đầu; phần thuật toán đề xuất và demo tích hợp toàn hệ thống vẫn cần hoàn thiện.
+
 1. Chốt schema và quyền CRUD địa điểm/dịch vụ; thêm MongoDB repository và API có pagination/filter.
 2. Định nghĩa event và query patterns Cassandra trước khi thiết kế bảng.
 3. Thiết kế các quan hệ Neo4j và thuật toán gợi ý từ dữ liệu thật.

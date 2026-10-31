@@ -1,11 +1,12 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import {
   Box,
   Card as MuiCard,
   CardActionArea,
   CardContent,
+  Container,
   MenuItem,
   Pagination,
   Skeleton,
@@ -32,6 +33,7 @@ const sortOptions = [
 ] as const;
 
 export function ExploreView() {
+  const recordedSearch = useRef('');
   const [search, setSearch] = useState('');
   const debounced = useDebouncedValue(search);
   const [category, setCategory] = useState('');
@@ -75,6 +77,16 @@ export function ExploreView() {
         setResult(data);
         setError('');
         setResolvedKey(requestKey);
+        if (debounced && page === 0 && recordedSearch.current !== debounced) {
+          recordedSearch.current = debounced;
+          void api('/api/activity', {
+            method: 'POST',
+            body: JSON.stringify({ type: 'search', search: debounced }),
+          }).catch(() => {
+            /* Search remains available if analytics is down. */
+          });
+        }
+        if (!debounced) recordedSearch.current = '';
       })
       .catch((err) => {
         if (!active) return;
@@ -85,7 +97,7 @@ export function ExploreView() {
       active = false;
       controller.abort();
     };
-  }, [query, requestKey]);
+  }, [query, requestKey, debounced, page]);
 
   const change = (apply: () => void) => {
     apply();
@@ -94,7 +106,7 @@ export function ExploreView() {
   const pageCount = Math.max(1, Math.ceil(result.total / PAGE_SIZE));
 
   return (
-    <>
+    <Container maxWidth="lg" sx={{ py: { xs: 3, md: 5 } }}>
       <PageHeader
         title="Khám phá địa điểm"
         description="Tìm điểm đến theo tên, mô tả, thẻ; lọc theo danh mục, khu vực và đánh giá."
@@ -199,7 +211,7 @@ export function ExploreView() {
           )}
         </>
       )}
-    </>
+    </Container>
   );
 }
 

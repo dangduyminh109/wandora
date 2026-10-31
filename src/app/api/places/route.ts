@@ -6,7 +6,6 @@ import { createPlace, searchPlaces } from '@/features/places/server/places';
 
 export async function GET(request: Request) {
   return handleApi(async () => {
-    await requireUser();
     const query = placesQuerySchema.parse(Object.fromEntries(new URL(request.url).searchParams));
     const { value, hit } = await searchPlaces(query);
     return NextResponse.json(value, { headers: { 'X-Cache': hit ? 'HIT' : 'MISS' } });

@@ -12,7 +12,7 @@ export function Brand({ href = '/', compact = false }: { href?: string; compact?
         display: 'inline-flex',
         alignItems: 'center',
         gap: 1,
-        color: 'text.primary',
+        color: 'inherit',
         textDecoration: 'none',
         flexShrink: 0,
       }}

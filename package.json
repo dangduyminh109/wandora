@@ -17,7 +17,9 @@
     "db:ping-mongo": "tsx --env-file=.env.local scripts/ping-mongo.ts",
     "db:mongo-indexes": "tsx --env-file=.env.local scripts/create-mongo-indexes.ts",
     "db:seed-travel": "tsx --env-file=.env.local scripts/seed-travel.ts",
-    "bench:cache": "tsx --conditions react-server --env-file=.env.local scripts/bench-cache.ts"
+    "bench:cache": "tsx --conditions react-server --env-file=.env.local scripts/bench-cache.ts",
+    "db:init-cassandra": "tsx --env-file=.env.local scripts/init-cassandra.ts",
+    "test:activity": "tsx --env-file=.env.local scripts/smoke-activity.ts"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",
@@ -28,7 +30,9 @@
     "@mui/material": "^9.4.0",
     "@mui/material-nextjs": "^9.4.0",
     "@phosphor-icons/react": "^2.1.10",
+    "cassandra-driver": "^4.10.0",
     "jose": "^6.0.0",
+    "lenis": "^1.3.27",
     "mongodb": "^7.7.0",
     "neo4j-driver": "^6.0.0",
     "next": "^16.0.0",
