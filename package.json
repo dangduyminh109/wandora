@@ -19,7 +19,9 @@
     "db:seed-travel": "tsx --env-file=.env.local scripts/seed-travel.ts",
     "bench:cache": "tsx --conditions react-server --env-file=.env.local scripts/bench-cache.ts",
     "db:init-cassandra": "tsx --env-file=.env.local scripts/init-cassandra.ts",
-    "test:activity": "tsx --env-file=.env.local scripts/smoke-activity.ts"
+    "test:activity": "tsx --env-file=.env.local scripts/smoke-activity.ts",
+    "db:sync-neo4j": "tsx --env-file=.env.local scripts/sync-places-neo4j.ts",
+    "db:seed-interactions": "tsx --conditions react-server --env-file=.env.local scripts/seed-interactions.ts"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",

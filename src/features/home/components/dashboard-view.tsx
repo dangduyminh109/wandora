@@ -20,7 +20,6 @@ import {
 } from '@mui/material';
 import {
   MagnifyingGlassIcon,
-  CompassIcon,
   StarIcon,
   MapPinIcon,
   ArrowRightIcon,
@@ -32,16 +31,24 @@ import {
   BuildingsIcon,
 } from '@phosphor-icons/react';
 import { Badge } from '@/components/ui/badge';
-import { PageHeader } from '@/components/ui/page-header';
+import { Card } from '@/components/ui/card';
+import { FavoriteButton } from '@/features/places/components/favorite-button';
 import { api } from '@/lib/api-client';
 import { categoryLabel } from '@/features/places/constants';
 import type { Place } from '@/features/places/types';
 import type { User } from '@/types/user';
 
+type RecResponse = {
+  personalized: Place[];
+  strategy: 'collaborative' | 'content_based' | 'trending';
+  trending: Place[];
+};
 interface DashboardStats {
+  trendingPlaces: Place[];
+  strategy: RecResponse['strategy'];
   recommendedPlaces: Place[];
   searchCount: number;
-  topSearches: { query: string; count: number }[];
+  topSearches: { value: string; count: number }[];
 }
 
 export function DashboardView({ user }: { user: User }) {
@@ -53,25 +60,29 @@ export function DashboardView({ user }: { user: User }) {
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
 
     Promise.allSettled([
-      api<{ places: Place[] }>('/api/places?sortBy=ratingAvg&direction=desc&pageSize=6'),
-      api<{ topSearches?: { query: string; count: number }[]; totalSearches?: number }>('/api/activity/stats?days=7'),
+      api<RecResponse>('/api/recommendations?limit=6'),
+      api<{ topSearches?: { value: string; count: number }[]; total?: number }>(
+        '/api/activity/stats?days=7',
+      ),
     ])
       .then(([placesRes, activityRes]) => {
         if (!active) return;
-        const places = placesRes.status === 'fulfilled' ? placesRes.value.places : [];
+        const recommendations = placesRes.status === 'fulfilled' ? placesRes.value : null;
         const activity = activityRes.status === 'fulfilled' ? activityRes.value : {};
 
         setStats({
-          recommendedPlaces: places,
-          searchCount: activity.totalSearches || (activity.topSearches?.reduce((a, b) => a + b.count, 0) ?? 0),
+          recommendedPlaces: recommendations?.personalized ?? [],
+          trendingPlaces: recommendations?.trending ?? [],
+          strategy: recommendations?.strategy ?? 'trending',
+          searchCount: activity.total ?? 0,
           topSearches: activity.topSearches || [],
         });
       })
       .catch((err) => {
-        if (active) setError(err instanceof Error ? err.message : 'Không tải được dữ liệu bảng điều khiển.');
+        if (active)
+          setError(err instanceof Error ? err.message : 'Không tải được dữ liệu bảng điều khiển.');
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -92,10 +103,34 @@ export function DashboardView({ user }: { user: User }) {
   };
 
   const categories = [
-    { key: 'beach', label: 'Biển & Đảo', icon: SunHorizonIcon, color: '#0284c7', desc: 'Bãi tắm, vịnh biển, san hô' },
-    { key: 'nature', label: 'Núi & Thiên nhiên', icon: MountainsIcon, color: '#059669', desc: 'Đỉnh núi, thác nước, rừng già' },
-    { key: 'cultural', label: 'Văn hóa & Di sản', icon: BankIcon, color: '#d97706', desc: 'Phố cổ, đền chùa, di tích' },
-    { key: 'urban', label: 'Đô thị & Giải trí', icon: BuildingsIcon, color: '#7c3aed', desc: 'Thành phố, ẩm thực, mua sắm' },
+    {
+      key: 'beach',
+      label: 'Biển & Đảo',
+      icon: SunHorizonIcon,
+      color: '#0284c7',
+      desc: 'Bãi tắm, vịnh biển, san hô',
+    },
+    {
+      key: 'nature',
+      label: 'Núi & Thiên nhiên',
+      icon: MountainsIcon,
+      color: '#059669',
+      desc: 'Đỉnh núi, thác nước, rừng già',
+    },
+    {
+      key: 'cultural',
+      label: 'Văn hóa & Di sản',
+      icon: BankIcon,
+      color: '#d97706',
+      desc: 'Phố cổ, đền chùa, di tích',
+    },
+    {
+      key: 'urban',
+      label: 'Đô thị & Giải trí',
+      icon: BuildingsIcon,
+      color: '#7c3aed',
+      desc: 'Thành phố, ẩm thực, mua sắm',
+    },
   ];
 
   return (
@@ -144,8 +179,11 @@ export function DashboardView({ user }: { user: User }) {
             <Typography variant="h3" sx={{ fontWeight: 800, color: '#fff', mb: 1 }}>
               Xin chào, {user.name}!
             </Typography>
-            <Typography sx={{ color: 'rgba(255,255,255,0.8)', fontSize: '.9375rem', lineHeight: 1.6 }}>
-              Khám phá các điểm đến mới, quản lý thông tin lưu trú và trải nghiệm du lịch khắp Việt Nam.
+            <Typography
+              sx={{ color: 'rgba(255,255,255,0.8)', fontSize: '.9375rem', lineHeight: 1.6 }}
+            >
+              Khám phá các điểm đến mới, quản lý thông tin lưu trú và trải nghiệm du lịch khắp Việt
+              Nam.
             </Typography>
           </Box>
 
@@ -285,13 +323,20 @@ export function DashboardView({ user }: { user: User }) {
 
       {/* ── RECOMMENDED DESTINATIONS FROM API ── */}
       <Box sx={{ mb: 5 }}>
-        <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 2.5 }}>
+        <Stack
+          direction="row"
+          sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 2.5 }}
+        >
           <Box>
             <Typography variant="h4" sx={{ fontWeight: 700, color: '#163047' }}>
-              Địa điểm đánh giá cao nhất
+              Gợi ý dành riêng cho bạn
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Gợi ý những điểm đến nổi bật được cộng đồng đánh giá cao từ cơ sở dữ liệu.
+              {stats?.strategy === 'collaborative'
+                ? 'Dựa trên người dùng có sở thích tương tự bạn'
+                : stats?.strategy === 'content_based'
+                  ? 'Dựa trên danh mục và vùng miền bạn quan tâm'
+                  : 'Gợi ý các điểm đến nổi bật nhất hệ thống'}
             </Typography>
           </Box>
           <Button
@@ -333,12 +378,24 @@ export function DashboardView({ user }: { user: User }) {
                     },
                   }}
                 >
+                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 2, pt: 1 }}>
+                    <FavoriteButton placeId={place.id} size="small" />
+                  </Box>
                   <CardActionArea
                     component={Link}
                     href={`/explore/${place.slug}`}
-                    sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}
+                    sx={{
+                      p: 3,
+                      height: '100%',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'stretch',
+                    }}
                   >
-                    <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+                    <Stack
+                      direction="row"
+                      sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}
+                    >
                       <Badge label={categoryLabel(place.category)} />
                       <Stack direction="row" sx={{ alignItems: 'center', gap: 0.5 }}>
                         <StarIcon size={16} color="#f59e0b" weight="fill" />
@@ -412,6 +469,60 @@ export function DashboardView({ user }: { user: User }) {
           )}
         </Grid>
       </Box>
+
+      {stats && stats.trendingPlaces.length > 0 && (
+        <Card
+          title="Địa điểm thịnh hành được đánh giá cao"
+          description="Các điểm đến thu hút nhiều lượt tương tác"
+        >
+          <Box
+            sx={{
+              display: 'grid',
+              gap: 2,
+              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
+            }}
+          >
+            {stats.trendingPlaces.slice(0, 3).map((place) => (
+              <MuiCard key={place.id} variant="outlined" sx={{ position: 'relative' }}>
+                <Box sx={{ position: 'absolute', top: 14, right: 14, zIndex: 2 }}>
+                  <FavoriteButton placeId={place.id} size="small" />
+                </Box>
+                <CardActionArea
+                  component={Link}
+                  href={`/explore/${place.slug}`}
+                  sx={{ height: '100%' }}
+                >
+                  <CardContent sx={{ p: 2.5 }}>
+                    <Stack
+                      direction="row"
+                      sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 1, pr: 4.5 }}
+                    >
+                      <Badge label={categoryLabel(place.category)} />
+                      <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
+                        <StarIcon size={15} weight="fill" color="#eab308" />
+                        <Typography variant="caption" sx={{ fontWeight: 600 }}>
+                          {place.ratingAvg ? place.ratingAvg.toFixed(1) : 'Mới'}
+                        </Typography>
+                      </Stack>
+                    </Stack>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 0.5 }}>
+                      {place.name}
+                    </Typography>
+                    <Stack
+                      direction="row"
+                      spacing={0.5}
+                      sx={{ alignItems: 'center', color: 'text.secondary' }}
+                    >
+                      <MapPinIcon size={14} />
+                      <Typography variant="caption">{place.region}</Typography>
+                    </Stack>
+                  </CardContent>
+                </CardActionArea>
+              </MuiCard>
+            ))}
+          </Box>
+        </Card>
+      )}
 
       {/* ── ACTIVITY & AUDIT LOG SHORTCUT ── */}
       <Paper variant="outlined" sx={{ p: 3.5, borderRadius: 3, bgcolor: '#f8fafc' }}>
