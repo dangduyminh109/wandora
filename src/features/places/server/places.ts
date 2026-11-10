@@ -177,26 +177,40 @@ export async function listPlaces(query: z.output<typeof placesQuerySchema>) {
 }
 
 // Tìm kiếm có cache Redis. `useCache: false` dùng để đo thời gian khi không có cache.
-// Danh mục và khu vực đang có trong dữ liệu. Cache chung với phiên bản cache nên tự làm mới khi có ghi.
-async function knownFacets() {
-  const { value } = await cache.cached('places:facets', CACHE_TTL_SECONDS, async () => {
-    const collection = await placesCollection();
-    const [categories, regions] = await Promise.all([
-      collection.distinct('category'),
-      collection.distinct('region'),
-    ]);
-    return { categories, regions };
+// Danh mục và khu vực đang có trong dữ liệu, giữ trong bộ nhớ tiến trình. Không dùng Redis vì mỗi lần
+// kiểm tra sẽ tốn thêm hai lượt gọi mạng trên đường đi vốn đã được cache (làm cache chậm hơn cả không
+// cache với các truy vấn nhẹ).
+const FACET_TTL_MS = 60_000;
+const FACET_MIN_REFRESH_MS = 2_000;
+type Facets = { at: number; categories: Set<string>; regions: Set<string> };
+let facetCache: Facets | undefined;
+
+async function loadFacets(): Promise<Facets> {
+  const collection = await placesCollection();
+  const [categories, regions] = await Promise.all([
+    collection.distinct('category'),
+    collection.distinct('region'),
+  ]);
+  return (facetCache = {
+    at: Date.now(),
+    categories: new Set(categories),
+    regions: new Set(regions),
   });
-  return value;
 }
+
+const isUnknown = (facets: Facets, query: { category: string; region: string }) =>
+  (!!query.category && !facets.categories.has(query.category)) ||
+  (!!query.region && !facets.regions.has(query.region));
 
 export async function hasUnknownFacet(query: { category: string; region: string }) {
   if (!query.category && !query.region) return false;
-  const facets = await knownFacets();
-  return (
-    (!!query.category && !facets.categories.includes(query.category)) ||
-    (!!query.region && !facets.regions.includes(query.region))
-  );
+  let facets = facetCache && Date.now() - facetCache.at < FACET_TTL_MS ? facetCache : undefined;
+  facets ??= await loadFacets();
+  // Giá trị lạ có thể là danh mục/khu vực vừa được thêm sau lần tải trước: tải lại một lần (không quá
+  // thường xuyên) rồi mới kết luận, để dữ liệu mới không bị coi là rác trong tối đa một phút.
+  if (isUnknown(facets, query) && Date.now() - facets.at >= FACET_MIN_REFRESH_MS)
+    facets = await loadFacets();
+  return isUnknown(facets, query);
 }
 
 export async function searchPlaces(
