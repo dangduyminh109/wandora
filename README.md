@@ -62,7 +62,7 @@ Access JWT sống 1 giờ, refresh token opaque sống 7 ngày. Cookie HttpOnly,
 
 ## UI foundation
 
-MUI + Emotion, Zustand, React Hook Form + Zod và Sonner đã được tích hợp. Trang public `/`, login `/login`, workspace `/dashboard`, admin `/admin`, bảng user `/admin/users`, tạo user `/admin/users/create`, trang mẫu `/admin/components`.
+MUI + Emotion, Zustand, React Hook Form + Zod và Sonner đã được tích hợp. Trang public `/`, khám phá `/explore`, login `/login`, workspace `/dashboard`, admin `/admin`, bảng user `/admin/users`, tạo user `/admin/users/create`, trang mẫu `/admin/components`.
 
 Hồ sơ `/profile` hỗ trợ sửa tên/điện thoại/giới thiệu và đổi mật khẩu. Admin có thể sửa thông tin, đổi quyền và khóa/mở khóa user. Quên mật khẩu `/forgot-password` gửi link dùng một lần, hết hạn 15 phút tới Mailpit local: mở http://localhost:8025 để đọc email. SMTP local mặc định `127.0.0.1:1025`; Mailpit chạy cùng compose. Xem [docs/account-management.md](docs/account-management.md). Chạy `npm run test:accounts` để kiểm tra các luồng này bằng tài khoản thử nghiệm.
 
@@ -77,3 +77,46 @@ docker compose --env-file .env.local --profile travel --profile analytics up -d
 ```
 
 Các container chỉ bind loopback; compose dành cho local development. MongoDB đã có CRUD địa điểm, khách sạn, nhà hàng, dịch vụ và cache Redis. Cassandra lưu lịch sử xem/tìm kiếm, có API thống kê cá nhân và trang `/activity`. Sau khi bật profile analytics, chạy `npm run db:init-cassandra`. Xem [docs/activity-cassandra.md](docs/activity-cassandra.md) để biết schema, cách demo, kiểm thử và hợp đồng dữ liệu cho phần đề xuất Neo4j.
+
+### Nạp dữ liệu mẫu
+
+Sau khi các container đã chạy, nạp theo thứ tự. Mọi lệnh chạy lại được, trừ `db:seed-interactions` (xem bên dưới):
+
+```powershell
+npm run db:seed               # tài khoản admin (Neo4j)
+npm run db:mongo-indexes      # index MongoDB, gồm index tiện ích
+npm run db:seed-travel        # địa điểm, khách sạn, nhà hàng, dịch vụ; tự tính tiện ích ở cuối
+npm run db:init-cassandra     # schema Cassandra
+npm run db:sync-neo4j         # địa điểm và tiện ích sang Neo4j (phải chạy sau db:seed-travel)
+npm run db:seed-interactions  # đánh giá, yêu thích mẫu cho phần đề xuất (chỉ chạy một lần)
+```
+
+`db:seed-interactions` bật/tắt yêu thích (`toggleFavorite`), nên chạy lần hai sẽ **bỏ** các lượt yêu thích đã tạo ở lần đầu; đánh giá thì được ghi đè nên không bị nhân đôi. Muốn nạp lại từ đầu thì xoá dữ liệu Neo4j rồi chạy lại các lệnh trên.
+
+Nếu sửa quy tắc chuẩn hoá tiện ích hoặc nhập dữ liệu trực tiếp vào MongoDB, chạy `npm run db:backfill-amenities` để tính lại `amenities` của mọi địa điểm, rồi `npm run db:sync-neo4j` để cập nhật đồ thị.
+
+## Khám phá và tìm theo tiện ích
+
+Trang `/explore` mở cho cả khách chưa đăng nhập. Ô "Tìm kiếm" là full-text search của MongoDB trên tên, mô tả và thẻ (khớp theo từ, phân biệt dấu). Mục "Tìm theo tiện ích" cho chọn tối đa 10 tiện ích rồi bấm tìm; chỉ khi bấm mới gọi API.
+
+**Tiện ích** là mã chuẩn trong [src/features/places/amenities.ts](src/features/places/amenities.ts): `hotel`, `restaurant`, `cafe`, `pool`, `spa`, `amusement_park`, `beach`, `tour`, `transport`, `ticket`. Trường `amenities` của địa điểm được **tự tính** từ category, tags và dữ liệu con (khách sạn, nhà hàng, dịch vụ), nên không nhập tay; cập nhật dữ liệu con sẽ tính lại. Chuỗi tự do như "hồ bơi", "bể bơi", "pool" đều quy về `pool`.
+
+```text
+GET /api/places/by-amenities?amenities=pool,spa&region=&category=&minRating=&page=0&pageSize=12
+```
+
+Mỗi địa điểm trả kèm `match`: tiện ích khớp đúng (`matched`), tiện ích chỉ có bản gần giống (`similar`), tiện ích còn thiếu (`missing`), loại (`full` khớp đủ, `partial` khớp một phần, `similar` chỉ gần giống) và `score`. Mã tiện ích lạ hoặc để trống trả 400. Kết quả được cache Redis (header `X-Cache`).
+
+**Điểm** = (số tiện ích khớp đúng + tổng trọng số tiện ích gần giống) / số tiện ích đã chọn, cộng tối đa 0.009 theo đánh giá chỉ để phân hạng địa điểm bằng điểm. "Khớp đủ" luôn đứng đầu; còn lại xếp theo điểm chứ không theo nhãn. Bảng độ gần giống (ví dụ hồ bơi ≈ bãi biển 0.7) nằm trong `amenitySimilarities` và được đồng bộ sang Neo4j:
+
+```text
+(:Place)-[:HAS_AMENITY]->(:Amenity)
+(:Amenity)-[:SIMILAR_TO {weight}]-(:Amenity)
+(:User)-[:SEARCHED_FOR {count}]->(:Amenity)
+```
+
+Phần "gần giống" lấy từ Neo4j. Nếu Neo4j không dùng được (quá 3 giây hoặc lỗi kết nối), tìm kiếm vẫn trả kết quả khớp đúng, giao diện báo "chưa có gợi ý gần giống" và kết quả đó không bị cache.
+
+### Đề xuất
+
+`GET /api/recommendations` chọn chiến lược theo thứ tự: `collaborative` (người dùng có sở thích giống nhau) → `interest` (các tiện ích người dùng đã tìm, mỗi tiện ích tính tối đa 5 lần) → `content_based` (danh mục và vùng đã thích/đánh giá) → `trending`. Khi Neo4j không dùng được, gợi ý, địa điểm liên quan và thịnh hành lùi về địa điểm đánh giá cao nhất từ MongoDB. Yêu thích chỉ lưu trong Neo4j nên không có phương án lùi.
