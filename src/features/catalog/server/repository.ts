@@ -96,7 +96,8 @@ export function createCatalogRepository<T extends { name: string; placeId: strin
       const sort: Sort = { [query.sortBy]: query.direction === 'asc' ? 1 : -1, _id: 1 };
       const [docs, total] = await Promise.all([
         col
-          .find(filter)
+          // Sắp xếp theo tên phải theo thứ tự chữ cái tiếng Việt, không phải theo byte.
+          .find(filter, query.sortBy === 'name' ? { collation: { locale: 'vi' } } : undefined)
           .sort(sort)
           .skip(query.page * query.pageSize)
           .limit(query.pageSize)

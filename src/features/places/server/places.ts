@@ -80,6 +80,11 @@ export async function createPlace(input: z.output<typeof placeInputSchema>) {
 
 const SEARCH_MATCH_LIMIT = 1000;
 
+// So sánh chuỗi theo tiếng Việt (dấu, chữ Đ) thay vì theo byte; chỉ cần khi sắp xếp theo tên.
+// Không dùng cho truy vấn $text vì MongoDB không cho kết hợp $text với collation.
+const VIETNAMESE = { locale: 'vi' } as const;
+const sortCollation = (sortBy: string) => (sortBy === 'name' ? VIETNAMESE : undefined);
+
 // Các bộ lọc không liên quan tới từ khóa (danh mục, khu vực, đánh giá, tìm theo một phần tên).
 function placeFilters(query: z.output<typeof placesQuerySchema>): Filter<PlaceDoc> {
   const filter: Filter<PlaceDoc> = {};
@@ -134,7 +139,12 @@ export async function listPlaces(query: z.output<typeof placesQuerySchema>) {
     const sortField = query.sortBy === 'relevance' ? 'createdAt' : query.sortBy;
     const sort: Sort = { [sortField]: direction, _id: 1 };
     const [docs, total] = await Promise.all([
-      collection.find(base).sort(sort).skip(start).limit(query.pageSize).toArray(),
+      collection
+        .find(base, { collation: sortCollation(query.sortBy) })
+        .sort(sort)
+        .skip(start)
+        .limit(query.pageSize)
+        .toArray(),
       collection.countDocuments(base),
     ]);
     return { places: docs.map(toPlace), total };
@@ -155,7 +165,10 @@ export async function listPlaces(query: z.output<typeof placesQuerySchema>) {
   }
   const sort: Sort = { [query.sortBy]: direction, _id: 1 };
   const docs = await collection
-    .find({ _id: { $in: ids.map((id) => new ObjectId(id)) } })
+    .find(
+      { _id: { $in: ids.map((id) => new ObjectId(id)) } },
+      { collation: sortCollation(query.sortBy) },
+    )
     .sort(sort)
     .skip(start)
     .limit(query.pageSize)
