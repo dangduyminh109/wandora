@@ -80,7 +80,7 @@ Các container chỉ bind loopback; compose dành cho local development. MongoDB
 
 ### Nạp dữ liệu mẫu
 
-Sau khi các container đã chạy, nạp theo thứ tự. Mọi lệnh chạy lại được, trừ `db:seed-interactions` (xem bên dưới):
+Sau khi các container đã chạy, nạp theo thứ tự (mỗi lệnh chạy lại nhiều lần vẫn an toàn):
 
 ```powershell
 npm run db:seed               # tài khoản admin (Neo4j)
@@ -88,16 +88,14 @@ npm run db:mongo-indexes      # index MongoDB, gồm index tiện ích
 npm run db:seed-travel        # địa điểm, khách sạn, nhà hàng, dịch vụ; tự tính tiện ích ở cuối
 npm run db:init-cassandra     # schema Cassandra
 npm run db:sync-neo4j         # địa điểm và tiện ích sang Neo4j (phải chạy sau db:seed-travel)
-npm run db:seed-interactions  # đánh giá, yêu thích mẫu cho phần đề xuất (chỉ chạy một lần)
+npm run db:seed-interactions  # đánh giá, yêu thích mẫu cho phần đề xuất
 ```
-
-`db:seed-interactions` bật/tắt yêu thích (`toggleFavorite`), nên chạy lần hai sẽ **bỏ** các lượt yêu thích đã tạo ở lần đầu; đánh giá thì được ghi đè nên không bị nhân đôi. Muốn nạp lại từ đầu thì xoá dữ liệu Neo4j rồi chạy lại các lệnh trên.
 
 Nếu sửa quy tắc chuẩn hoá tiện ích hoặc nhập dữ liệu trực tiếp vào MongoDB, chạy `npm run db:backfill-amenities` để tính lại `amenities` của mọi địa điểm, rồi `npm run db:sync-neo4j` để cập nhật đồ thị.
 
 ## Khám phá và tìm theo tiện ích
 
-Trang `/explore` mở cho cả khách chưa đăng nhập. Ô "Tìm kiếm" là full-text search của MongoDB trên tên, mô tả và thẻ (khớp theo từ, phân biệt dấu). Mục "Tìm theo tiện ích" cho chọn tối đa 10 tiện ích rồi bấm tìm; chỉ khi bấm mới gọi API.
+Trang `/explore` mở cho cả khách chưa đăng nhập. Ô "Tìm kiếm" kết hợp full-text search của MongoDB (tên, mô tả, thẻ; khớp theo từ, không phân biệt dấu hay hoa thường) với khớp theo **đầu từ trong tên** (gõ "Mu" ra "Mũi Né", "Ha Lo" ra "Vịnh Hạ Long"). Tên khớp luôn được xếp trước khi chọn "Phù hợp nhất". Danh mục hoặc khu vực không có trong dữ liệu trả danh sách rỗng và không tạo khóa cache. Mục "Tìm theo tiện ích" cho chọn tối đa 10 tiện ích rồi bấm tìm; chỉ khi bấm mới gọi API.
 
 **Tiện ích** là mã chuẩn trong [src/features/places/amenities.ts](src/features/places/amenities.ts): `hotel`, `restaurant`, `cafe`, `pool`, `spa`, `amusement_park`, `beach`, `tour`, `transport`, `ticket`. Trường `amenities` của địa điểm được **tự tính** từ category, tags và dữ liệu con (khách sạn, nhà hàng, dịch vụ), nên không nhập tay; cập nhật dữ liệu con sẽ tính lại. Chuỗi tự do như "hồ bơi", "bể bơi", "pool" đều quy về `pool`.
 

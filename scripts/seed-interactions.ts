@@ -1,7 +1,7 @@
 import { closeMongo, getMongo } from '../src/lib/db/mongodb';
 import { getNeo4j } from '../src/lib/db/neo4j';
 import { createUser, findUser } from '../src/features/auth/server/users';
-import { toggleFavorite } from '../src/features/places/server/favorites';
+import { ensureFavorite } from '../src/features/places/server/favorites';
 import { createOrUpdateReview } from '../src/features/places/server/reviews';
 
 const sampleUsers = [
@@ -77,7 +77,7 @@ async function main() {
     if (u1 && beachPlaces.length >= 3) {
       for (const p of beachPlaces.slice(0, 3)) {
         const id = p._id.toHexString();
-        await toggleFavorite(u1.id, id);
+        await ensureFavorite(u1.id, id);
         await createOrUpdateReview(id, u1, {
           rating: 5,
           comment: `Bãi biển tuyệt đẹp, cát trắng mịn và dịch vụ xung quanh rất tốt!`,
@@ -90,7 +90,7 @@ async function main() {
     if (u2 && beachPlaces.length >= 2 && culturePlaces.length >= 2) {
       for (const p of beachPlaces.slice(0, 2)) {
         const id = p._id.toHexString();
-        await toggleFavorite(u2.id, id);
+        await ensureFavorite(u2.id, id);
         await createOrUpdateReview(id, u2, {
           rating: 5,
           comment: `Nước biển trong xanh, thích hợp nghỉ dưỡng cùng gia đình.`,
@@ -98,7 +98,7 @@ async function main() {
       }
       for (const p of culturePlaces.slice(0, 2)) {
         const id = p._id.toHexString();
-        await toggleFavorite(u2.id, id);
+        await ensureFavorite(u2.id, id);
         await createOrUpdateReview(id, u2, {
           rating: 5,
           comment: `Không gian cổ kính, mang đậm dấu ấn lịch sử hào hùng của dân tộc.`,
@@ -111,7 +111,7 @@ async function main() {
     if (u3 && naturePlaces.length >= 3) {
       for (const p of naturePlaces.slice(0, 3)) {
         const id = p._id.toHexString();
-        await toggleFavorite(u3.id, id);
+        await ensureFavorite(u3.id, id);
         await createOrUpdateReview(id, u3, {
           rating: 5,
           comment: `Cảnh sắc thiên nhiên hùng vĩ, không khí trong lành mát mẻ.`,
@@ -124,7 +124,7 @@ async function main() {
     if (u4 && culturePlaces.length >= 3) {
       for (const p of culturePlaces.slice(0, 3)) {
         const id = p._id.toHexString();
-        await toggleFavorite(u4.id, id);
+        await ensureFavorite(u4.id, id);
         await createOrUpdateReview(id, u4, {
           rating: 4,
           comment: `Kiến trúc rất độc đáo và ấn tượng, đáng để ghé thăm khi có dịp.`,

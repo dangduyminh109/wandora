@@ -6,33 +6,67 @@ import { getMongo } from '@/lib/db/mongodb';
 import { HttpError } from '@/lib/http';
 import type { Place } from '../types';
 
+async function assertPlaceExists(placeId: string) {
+  const place = await (
+    await getMongo()
+  )
+    .collection('places')
+    .findOne({ _id: new ObjectId(placeId) }, { projection: { _id: 1 } });
+  if (!place) throw new HttpError(404, 'Không tìm thấy địa điểm.');
+}
+
+// Hai thao tác cùng người dùng chạy song song (bấm nhanh, hai tab) trước đây có thể cùng thấy "chưa
+// thích" rồi cùng tạo quan hệ, sinh ra hai LIKED. Ghi vào node User ngay đầu giao dịch để Neo4j khóa
+// node đó: thao tác thứ hai phải chờ rồi mới đọc trạng thái mới. Cùng cách với accountTransaction.
+const LOCK_USER = 'SET u.favoritesRevision = coalesce(u.favoritesRevision, 0) + 1';
+
 export async function toggleFavorite(
   userId: string,
   placeId: string,
 ): Promise<{ favorited: boolean }> {
-  const db = await getMongo();
-  const place = await db.collection('places').findOne({ _id: new ObjectId(placeId) });
-  if (!place) throw new HttpError(404, 'Không tìm thấy địa điểm.');
-
+  await assertPlaceExists(placeId);
   const session = getNeo4j().session();
   try {
     const result = await session.executeWrite(async (tx) => {
       const res = await tx.run(
         `
         MATCH (u:User {id: $userId})
+        ${LOCK_USER}
         MERGE (p:Place {id: $placeId})
         WITH u, p
         OPTIONAL MATCH (u)-[r:LIKED]->(p)
-        WITH u, p, r
-        FOREACH (_ IN CASE WHEN r IS NOT NULL THEN [1] ELSE [] END | DELETE r)
-        FOREACH (_ IN CASE WHEN r IS NULL THEN [1] ELSE [] END | CREATE (u)-[:LIKED {createdAt: datetime()}]->(p))
-        RETURN r IS NULL AS favorited
+        WITH u, p, collect(r) AS existing
+        FOREACH (old IN existing | DELETE old)
+        FOREACH (_ IN CASE WHEN size(existing) = 0 THEN [1] ELSE [] END |
+          MERGE (u)-[l:LIKED]->(p) ON CREATE SET l.createdAt = datetime())
+        RETURN size(existing) = 0 AS favorited
         `,
         { userId, placeId },
       );
       return res.records[0]?.get('favorited') ?? false;
     });
     return { favorited: Boolean(result) };
+  } finally {
+    await session.close();
+  }
+}
+
+// Đảm bảo đã yêu thích (idempotent, khác toggleFavorite): dùng cho seed để chạy lại không bỏ thích.
+export async function ensureFavorite(userId: string, placeId: string): Promise<void> {
+  await assertPlaceExists(placeId);
+  const session = getNeo4j().session();
+  try {
+    await session.executeWrite((tx) =>
+      tx.run(
+        `
+        MATCH (u:User {id: $userId})
+        ${LOCK_USER}
+        MERGE (p:Place {id: $placeId})
+        MERGE (u)-[l:LIKED]->(p) ON CREATE SET l.createdAt = datetime()
+        `,
+        { userId, placeId },
+      ),
+    );
   } finally {
     await session.close();
   }

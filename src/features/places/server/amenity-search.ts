@@ -8,7 +8,7 @@ import { matchAmenities, type AmenityMatch } from '../amenities';
 import type { amenitySearchQuerySchema } from '../schemas';
 import type { Place } from '../types';
 import { findSimilarCandidates } from './amenity-graph';
-import { toPlace, type PlaceDoc } from './places';
+import { hasUnknownFacet, toPlace, type PlaceDoc } from './places';
 
 export type AmenitySearchResult = {
   places: (Place & { match: AmenityMatch })[];
@@ -83,6 +83,19 @@ class DegradedResult extends Error {
 }
 
 export async function searchPlacesByAmenities(query: AmenityQuery) {
+  // Danh mục/khu vực không tồn tại: trả rỗng, không tạo khóa cache (xem searchPlaces).
+  if (await hasUnknownFacet(query))
+    return {
+      value: {
+        places: [],
+        total: 0,
+        fullCount: 0,
+        partialCount: 0,
+        similarCount: 0,
+        similarAvailable: true,
+      } satisfies AmenitySearchResult,
+      hit: false,
+    };
   try {
     return await cache.cached(
       cache.keyOf('places:amenity-search', query),
