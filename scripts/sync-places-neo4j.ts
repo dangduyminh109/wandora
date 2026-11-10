@@ -1,5 +1,9 @@
 import { closeMongo, getMongo } from '../src/lib/db/mongodb';
 import { getNeo4j } from '../src/lib/db/neo4j';
+import {
+  initAmenityGraph,
+  syncPlaceAmenityEdges,
+} from '../src/features/places/server/amenity-graph';
 
 async function main() {
   console.log('Bắt đầu đồng bộ Place từ MongoDB sang Neo4j...');
@@ -66,21 +70,45 @@ async function main() {
           { batch },
         ),
       );
-      console.log(`Đã đồng bộ ${Math.min(i + batchSize, payload.length)} / ${payload.length} địa điểm`);
+      console.log(
+        `Đã đồng bộ ${Math.min(i + batchSize, payload.length)} / ${payload.length} địa điểm`,
+      );
     }
 
-    // 4. Thống kê số lượng node trong Neo4j
+    // 4. Tiện ích: tạo node Amenity, quan hệ SIMILAR_TO, rồi HAS_AMENITY cho từng địa điểm
+    await initAmenityGraph();
+    const amenityItems = places.map((doc) => ({
+      id: doc._id.toHexString(),
+      amenities: Array.isArray(doc.amenities) ? (doc.amenities as string[]) : [],
+    }));
+    for (let i = 0; i < amenityItems.length; i += batchSize) {
+      await syncPlaceAmenityEdges(amenityItems.slice(i, i + batchSize));
+    }
+    const noAmenities = amenityItems.filter((item) => item.amenities.length === 0).length;
+    if (noAmenities > 0)
+      console.log(
+        `Lưu ý: ${noAmenities} địa điểm chưa có tiện ích. Chạy npm run db:backfill-amenities rồi đồng bộ lại.`,
+      );
+
+    // 5. Thống kê số lượng node trong Neo4j
     const statsResult = await session.run(`
       MATCH (p:Place) WITH count(p) as placeCount
       MATCH (c:Category) WITH placeCount, count(c) as categoryCount
       MATCH (r:Region) WITH placeCount, categoryCount, count(r) as regionCount
-      RETURN placeCount, categoryCount, regionCount
+      MATCH (a:Amenity) WITH placeCount, categoryCount, regionCount, count(a) as amenityCount
+      OPTIONAL MATCH (:Place)-[h:HAS_AMENITY]->(:Amenity)
+      WITH placeCount, categoryCount, regionCount, amenityCount, count(h) as hasCount
+      OPTIONAL MATCH (:Amenity)-[s:SIMILAR_TO]->(:Amenity)
+      RETURN placeCount, categoryCount, regionCount, amenityCount, hasCount, count(s) as similarCount
     `);
     const record = statsResult.records[0];
     console.log('Đồng bộ hoàn tất! Thống kê Neo4j:');
     console.log(`- Places: ${record.get('placeCount').toString()}`);
     console.log(`- Categories: ${record.get('categoryCount').toString()}`);
     console.log(`- Regions: ${record.get('regionCount').toString()}`);
+    console.log(`- Amenities: ${record.get('amenityCount').toString()}`);
+    console.log(`- HAS_AMENITY: ${record.get('hasCount').toString()}`);
+    console.log(`- SIMILAR_TO: ${record.get('similarCount').toString()}`);
   } finally {
     await session.close();
     await neo4jDriver.close();

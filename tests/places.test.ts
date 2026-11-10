@@ -131,3 +131,33 @@ test('biểu mẫu địa điểm báo lỗi tọa độ sai', () => {
     assert.equal(placeFormSchema.safeParse({ ...base, ...coords }).success, false);
   }
 });
+
+test('namePrefixPattern: bỏ dấu, nối từ bằng "-" và khớp đầu từ trong slug', async () => {
+  const { namePrefixPattern } = await import('../src/features/places/search');
+  assert.equal(namePrefixPattern('Hạ Lo'), '(^|-)ha-lo');
+  assert.equal(namePrefixPattern('   '), null);
+  const re = new RegExp(namePrefixPattern('ha lo')!);
+  assert.ok(re.test('vinh-ha-long'));
+  assert.ok(re.test('ha-long'));
+  assert.ok(!re.test('vinh-tha-long'), 'phải khớp đầu từ, không khớp giữa từ');
+  assert.ok(new RegExp(namePrefixPattern('mu')!).test('doi-cat-bay-mui-ne'));
+});
+
+test('namePrefixPattern: ký tự đặc biệt của regex bị loại bỏ, không chèn được vào mẫu', async () => {
+  const { namePrefixPattern } = await import('../src/features/places/search');
+  const pattern = namePrefixPattern('a.*(b|c)[d]^$+?{}')!;
+  assert.match(pattern, /^\(\^\|-\)[a-z0-9-]+$/);
+});
+
+test('rankMatches: tên khớp luôn đứng trước, còn lại theo textScore, ổn định khi bằng điểm', async () => {
+  const { rankMatches } = await import('../src/features/places/search');
+  const text = new Map([
+    ['a', 5],
+    ['b', 9],
+    ['c', 9],
+  ]);
+  // 'a' (điểm text thấp) có tên khớp nên vượt 'b', 'c'; 'd' chỉ khớp tên.
+  assert.deepEqual(rankMatches(text, ['a', 'd']), ['a', 'd', 'b', 'c']);
+  assert.deepEqual(rankMatches(text, []), ['b', 'c', 'a']);
+  assert.deepEqual(rankMatches(new Map(), []), []);
+});

@@ -35,7 +35,9 @@ export function FavoritesView() {
 
   useEffect(() => {
     let active = true;
-    api<{ places: Place[]; total: number }>(`/api/places/favorites?page=${page}&pageSize=${PAGE_SIZE}`)
+    api<{ places: Place[]; total: number }>(
+      `/api/places/favorites?page=${page}&pageSize=${PAGE_SIZE}`,
+    )
       .then((data) => {
         if (!active) return;
         setResult(data);
@@ -109,11 +111,21 @@ export function FavoritesView() {
                     onToggle={() => setReload((v) => v + 1)}
                   />
                 </Box>
-                <CardActionArea component={Link} href={`/explore/${place.slug}`} sx={{ height: '100%' }}>
+                <CardActionArea
+                  component={Link}
+                  href={`/explore/${place.slug}`}
+                  sx={{ height: '100%' }}
+                >
                   <CardContent sx={{ p: 3 }}>
                     <Stack
                       direction="row"
-                      sx={{ justifyContent: 'space-between', alignItems: 'center', gap: 1, mb: 1, pr: 4.5 }}
+                      sx={{
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: 1,
+                        mb: 1,
+                        pr: 4.5,
+                      }}
                     >
                       <Badge label={categoryLabel(place.category)} />
                       <Stack direction="row" sx={{ alignItems: 'center', gap: 0.5 }}>

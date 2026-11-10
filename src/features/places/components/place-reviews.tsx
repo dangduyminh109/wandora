@@ -119,7 +119,10 @@ export function PlaceReviews({ placeId, ratingAvg, ratingCount }: Props) {
               borderColor: 'divider',
             }}
           >
-            <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+            <Stack
+              direction="row"
+              sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 1 }}
+            >
               <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
                 Đánh giá của bạn
               </Typography>
@@ -139,7 +142,11 @@ export function PlaceReviews({ placeId, ratingAvg, ratingCount }: Props) {
             </Typography>
           </Box>
         ) : (
-          <Box component="form" onSubmit={handleSubmit} sx={{ p: 2, borderRadius: 2, bgcolor: 'background.default' }}>
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            sx={{ p: 2, borderRadius: 2, bgcolor: 'background.default' }}
+          >
             <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
               {myReview ? 'Chỉnh sửa đánh giá của bạn' : 'Chia sẻ trải nghiệm của bạn'}
             </Typography>
@@ -191,7 +198,10 @@ export function PlaceReviews({ placeId, ratingAvg, ratingCount }: Props) {
         ) : (
           <Stack spacing={2}>
             {reviews.map((rev) => (
-              <Box key={rev.id} sx={{ '& + &': { borderTop: '1px solid', borderColor: 'divider', pt: 2 } }}>
+              <Box
+                key={rev.id}
+                sx={{ '& + &': { borderTop: '1px solid', borderColor: 'divider', pt: 2 } }}
+              >
                 <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', mb: 1 }}>
                   <Avatar sx={{ width: 32, height: 32, fontSize: 14, bgcolor: 'primary.main' }}>
                     {rev.userName ? rev.userName[0].toUpperCase() : 'U'}

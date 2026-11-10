@@ -5,6 +5,7 @@ import { getCassandra } from '@/lib/db/cassandra';
 import { getPlace } from '@/features/places/server/places';
 import { HttpError } from '@/lib/http';
 import { getRedis } from '@/lib/db/redis';
+import { recordAmenityInterest } from '@/features/places/server/amenity-graph';
 import { activityInputSchema, type Activity, type historyQuerySchema } from '../schemas';
 import { activityDays, summarizeActivity } from '../summary';
 
@@ -36,6 +37,11 @@ export async function recordActivity(userId: string, input: z.output<typeof acti
     ],
     { prepare: true, isIdempotent: true },
   );
+  // Sở thích tiện ích chỉ là tín hiệu phụ: Neo4j lỗi không được làm hỏng việc ghi lịch sử.
+  if (input.type === 'search' && input.amenities?.length)
+    await recordAmenityInterest(userId, [...new Set(input.amenities)]).catch((error) =>
+      console.error('Lỗi ghi sở thích tiện ích sang Neo4j:', error),
+    );
   return id.toString();
 }
 

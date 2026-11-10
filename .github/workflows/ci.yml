@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run format:check
+      - run: npm test
+      - run: npm run build
+        env:
+          # Giá trị giả chỉ để build; ứng dụng không kết nối CSDL lúc build.
+          APP_URL: http://localhost:3000
+          JWT_SECRET: ci-only-secret-0123456789abcdef0123456789abcdef
+          NEO4J_URI: bolt://localhost:7687
+          NEO4J_USERNAME: neo4j
+          NEO4J_PASSWORD: ci-only-password
+          REDIS_URL: redis://localhost:6379
+          MONGODB_URI: mongodb://localhost:27017/wandora

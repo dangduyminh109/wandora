@@ -41,7 +41,14 @@ function GridPattern() {
   return (
     <svg
       aria-hidden="true"
-      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.07, pointerEvents: 'none' }}
+      style={{
+        position: 'absolute',
+        inset: 0,
+        width: '100%',
+        height: '100%',
+        opacity: 0.07,
+        pointerEvents: 'none',
+      }}
     >
       <defs>
         <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
@@ -54,15 +61,26 @@ function GridPattern() {
 }
 
 /* ─── Glowing orb ─── */
-function Orb({ size = 400, top = '0%', right = '0%', opacity = 0.15, color = '#0ea5e9' }: {
-  size?: number; top?: string; right?: string; opacity?: number; color?: string;
+function Orb({
+  size = 400,
+  top = '0%',
+  right = '0%',
+  opacity = 0.15,
+  color = '#0ea5e9',
+}: {
+  size?: number;
+  top?: string;
+  right?: string;
+  opacity?: number;
+  color?: string;
 }) {
   return (
     <Box
       aria-hidden="true"
       sx={{
         position: 'absolute',
-        top, right,
+        top,
+        right,
         width: size,
         height: size,
         borderRadius: '50%',
@@ -79,10 +97,19 @@ function Orb({ size = 400, top = '0%', right = '0%', opacity = 0.15, color = '#0
 function Stat({ value, label }: { value: string; label: string }) {
   return (
     <Box sx={{ textAlign: 'center' }}>
-      <Typography sx={{ fontSize: { xs: '2rem', md: '2.75rem' }, fontWeight: 800, color: '#fff', lineHeight: 1 }}>
+      <Typography
+        sx={{
+          fontSize: { xs: '2rem', md: '2.75rem' },
+          fontWeight: 800,
+          color: '#fff',
+          lineHeight: 1,
+        }}
+      >
         {value}
       </Typography>
-      <Typography sx={{ mt: 0.5, color: 'rgba(255,255,255,0.65)', fontSize: '.875rem', fontWeight: 500 }}>
+      <Typography
+        sx={{ mt: 0.5, color: 'rgba(255,255,255,0.65)', fontSize: '.875rem', fontWeight: 500 }}
+      >
         {label}
       </Typography>
     </Box>
@@ -90,8 +117,16 @@ function Stat({ value, label }: { value: string; label: string }) {
 }
 
 /* ─── Feature card ─── */
-function FeatureCard({ icon: Icon, title, desc, accent }: {
-  icon: React.ElementType; title: string; desc: string; accent: string;
+function FeatureCard({
+  icon: Icon,
+  title,
+  desc,
+  accent,
+}: {
+  icon: React.ElementType;
+  title: string;
+  desc: string;
+  accent: string;
 }) {
   return (
     <Box
@@ -111,7 +146,9 @@ function FeatureCard({ icon: Icon, title, desc, accent }: {
         '&::before': {
           content: '""',
           position: 'absolute',
-          top: 0, left: 0, right: 0,
+          top: 0,
+          left: 0,
+          right: 0,
           height: 3,
           bgcolor: accent,
           borderRadius: '4px 4px 0 0',
@@ -130,8 +167,12 @@ function FeatureCard({ icon: Icon, title, desc, accent }: {
       >
         <Icon size={26} weight="duotone" aria-hidden="true" />
       </Box>
-      <Typography variant="h4" sx={{ mb: 1, color: '#163047' }}>{title}</Typography>
-      <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.75 }}>{desc}</Typography>
+      <Typography variant="h4" sx={{ mb: 1, color: '#163047' }}>
+        {title}
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.75 }}>
+        {desc}
+      </Typography>
     </Box>
   );
 }
@@ -142,16 +183,24 @@ function Step({ num, title, desc }: { num: string; title: string; desc: string }
     <Stack direction="row" sx={{ gap: 2.5, alignItems: 'flex-start' }}>
       <Avatar
         sx={{
-          width: 48, height: 48, flexShrink: 0,
-          bgcolor: '#075985', color: '#fff',
-          fontWeight: 700, fontSize: '1rem',
+          width: 48,
+          height: 48,
+          flexShrink: 0,
+          bgcolor: '#075985',
+          color: '#fff',
+          fontWeight: 700,
+          fontSize: '1rem',
         }}
       >
         {num}
       </Avatar>
       <Box sx={{ pt: 0.5 }}>
-        <Typography variant="h4" sx={{ mb: 0.75, color: '#163047' }}>{title}</Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.75 }}>{desc}</Typography>
+        <Typography variant="h4" sx={{ mb: 0.75, color: '#163047' }}>
+          {title}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.75 }}>
+          {desc}
+        </Typography>
       </Box>
     </Stack>
   );
@@ -204,7 +253,11 @@ export function PublicHome({ stats, featuredPlaces }: PublicHomeProps = {}) {
         />
 
         <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-          <Grid container spacing={{ xs: 4, md: 6 }} sx={{ alignItems: 'center', py: { xs: 8, md: 10 } }}>
+          <Grid
+            container
+            spacing={{ xs: 4, md: 6 }}
+            sx={{ alignItems: 'center', py: { xs: 8, md: 10 } }}
+          >
             <Grid size={{ xs: 12, md: 7 }}>
               {/* Badge */}
               <Box
@@ -222,7 +275,14 @@ export function PublicHome({ stats, featuredPlaces }: PublicHomeProps = {}) {
                 }}
               >
                 <CompassIcon size={14} color="#7dd3fc" weight="fill" />
-                <Typography sx={{ fontSize: '.75rem', fontWeight: 700, color: '#7dd3fc', letterSpacing: '0.06em' }}>
+                <Typography
+                  sx={{
+                    fontSize: '.75rem',
+                    fontWeight: 700,
+                    color: '#7dd3fc',
+                    letterSpacing: '0.06em',
+                  }}
+                >
                   HỆ THỐNG QUẢN LÝ DU LỊCH ĐA NỀN TẢNG
                 </Typography>
               </Box>
@@ -266,7 +326,8 @@ export function PublicHome({ stats, featuredPlaces }: PublicHomeProps = {}) {
                   textShadow: '0 1px 12px rgba(0,0,0,0.4)',
                 }}
               >
-                Nền tảng quản lý địa điểm, khách sạn, nhà hàng và trải nghiệm du lịch. Được xây dựng cho đội ngũ quản trị và thành viên đồng hành.
+                Nền tảng quản lý địa điểm, khách sạn, nhà hàng và trải nghiệm du lịch. Được xây dựng
+                cho đội ngũ quản trị và thành viên đồng hành.
               </Typography>
 
               {/* CTAs */}
@@ -286,7 +347,11 @@ export function PublicHome({ stats, featuredPlaces }: PublicHomeProps = {}) {
                     py: 1.25,
                     borderRadius: 2,
                     boxShadow: '0 8px 24px rgba(0,0,0,0.25)',
-                    '&:hover': { bgcolor: '#e0f2fe', color: '#0369a1', boxShadow: '0 12px 28px rgba(0,0,0,0.3)' },
+                    '&:hover': {
+                      bgcolor: '#e0f2fe',
+                      color: '#0369a1',
+                      boxShadow: '0 12px 28px rgba(0,0,0,0.3)',
+                    },
                   }}
                 >
                   Đăng nhập ngay
@@ -335,7 +400,10 @@ export function PublicHome({ stats, featuredPlaces }: PublicHomeProps = {}) {
                   color: '#fff',
                 }}
               >
-                <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                <Stack
+                  direction="row"
+                  sx={{ alignItems: 'center', justifyContent: 'space-between', mb: 2 }}
+                >
                   <Box
                     sx={{
                       display: 'inline-flex',
@@ -367,32 +435,55 @@ export function PublicHome({ stats, featuredPlaces }: PublicHomeProps = {}) {
                 <Typography variant="h5" sx={{ fontWeight: 800, color: '#fff', mb: 1 }}>
                   Quần đảo Cát Bà · Vịnh Lan Hạ
                 </Typography>
-                <Typography sx={{ fontSize: '.875rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, mb: 3 }}>
-                  Kỳ quan thiên nhiên với hàng trăm hòn đảo đá vôi, vịnh nước ngọc bích và bãi tắm hoang sơ nguyên vẹn.
+                <Typography
+                  sx={{
+                    fontSize: '.875rem',
+                    color: 'rgba(255,255,255,0.7)',
+                    lineHeight: 1.6,
+                    mb: 3,
+                  }}
+                >
+                  Kỳ quan thiên nhiên với hàng trăm hòn đảo đá vôi, vịnh nước ngọc bích và bãi tắm
+                  hoang sơ nguyên vẹn.
                 </Typography>
 
                 <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 1, mb: 3 }}>
-                  {['Tour du thuyền', 'Chèo Kayak', 'Resort view biển', 'Hải sản tươi'].map((tag) => (
-                    <Box
-                      key={tag}
-                      sx={{
-                        px: 1.5,
-                        py: 0.5,
-                        borderRadius: 2,
-                        bgcolor: 'rgba(255,255,255,0.1)',
-                        fontSize: '.75rem',
-                        color: 'rgba(255,255,255,0.9)',
-                        fontWeight: 500,
-                      }}
-                    >
-                      {tag}
-                    </Box>
-                  ))}
+                  {['Tour du thuyền', 'Chèo Kayak', 'Resort view biển', 'Hải sản tươi'].map(
+                    (tag) => (
+                      <Box
+                        key={tag}
+                        sx={{
+                          px: 1.5,
+                          py: 0.5,
+                          borderRadius: 2,
+                          bgcolor: 'rgba(255,255,255,0.1)',
+                          fontSize: '.75rem',
+                          color: 'rgba(255,255,255,0.9)',
+                          fontWeight: 500,
+                        }}
+                      >
+                        {tag}
+                      </Box>
+                    ),
+                  )}
                 </Stack>
 
-                <Stack direction="row" sx={{ pt: 2, borderTop: '1px solid rgba(255,255,255,0.12)', justifyContent: 'space-between' }}>
+                <Stack
+                  direction="row"
+                  sx={{
+                    pt: 2,
+                    borderTop: '1px solid rgba(255,255,255,0.12)',
+                    justifyContent: 'space-between',
+                  }}
+                >
                   <Box>
-                    <Typography sx={{ fontSize: '.6875rem', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>
+                    <Typography
+                      sx={{
+                        fontSize: '.6875rem',
+                        color: 'rgba(255,255,255,0.5)',
+                        textTransform: 'uppercase',
+                      }}
+                    >
                       Khách sạn
                     </Typography>
                     <Typography sx={{ fontSize: '1rem', fontWeight: 700, color: '#38bdf8' }}>
@@ -400,7 +491,13 @@ export function PublicHome({ stats, featuredPlaces }: PublicHomeProps = {}) {
                     </Typography>
                   </Box>
                   <Box>
-                    <Typography sx={{ fontSize: '.6875rem', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>
+                    <Typography
+                      sx={{
+                        fontSize: '.6875rem',
+                        color: 'rgba(255,255,255,0.5)',
+                        textTransform: 'uppercase',
+                      }}
+                    >
                       Nhà hàng
                     </Typography>
                     <Typography sx={{ fontSize: '1rem', fontWeight: 700, color: '#38bdf8' }}>
@@ -408,7 +505,13 @@ export function PublicHome({ stats, featuredPlaces }: PublicHomeProps = {}) {
                     </Typography>
                   </Box>
                   <Box>
-                    <Typography sx={{ fontSize: '.6875rem', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>
+                    <Typography
+                      sx={{
+                        fontSize: '.6875rem',
+                        color: 'rgba(255,255,255,0.5)',
+                        textTransform: 'uppercase',
+                      }}
+                    >
                       Hoạt động
                     </Typography>
                     <Typography sx={{ fontSize: '1rem', fontWeight: 700, color: '#38bdf8' }}>
@@ -514,13 +617,21 @@ export function PublicHome({ stats, featuredPlaces }: PublicHomeProps = {}) {
             </Typography>
             <Typography
               component="h2"
-              sx={{ fontSize: { xs: '1.875rem', md: '2.5rem' }, fontWeight: 800, color: '#163047', letterSpacing: '-0.01em' }}
+              sx={{
+                fontSize: { xs: '1.875rem', md: '2.5rem' },
+                fontWeight: 800,
+                color: '#163047',
+                letterSpacing: '-0.01em',
+              }}
             >
               Mọi thứ bạn cần,
               <br />
               một nơi duy nhất.
             </Typography>
-            <Typography color="text.secondary" sx={{ mt: 2.5, maxWidth: 500, mx: 'auto', lineHeight: 1.75 }}>
+            <Typography
+              color="text.secondary"
+              sx={{ mt: 2.5, maxWidth: 500, mx: 'auto', lineHeight: 1.75 }}
+            >
               Wandora tập hợp toàn bộ dữ liệu du lịch vào một nền tảng quản lý thống nhất, mạnh mẽ.
             </Typography>
           </Box>
@@ -600,8 +711,12 @@ export function PublicHome({ stats, featuredPlaces }: PublicHomeProps = {}) {
               >
                 Điểm đến hàng đầu Việt Nam
               </Typography>
-              <Typography color="text.secondary" sx={{ mt: 2, maxWidth: 540, mx: 'auto', lineHeight: 1.75 }}>
-                Các địa danh du lịch nổi bật được lưu trữ và đánh giá cao nhất trên hệ thống Wandora.
+              <Typography
+                color="text.secondary"
+                sx={{ mt: 2, maxWidth: 540, mx: 'auto', lineHeight: 1.75 }}
+              >
+                Các địa danh du lịch nổi bật được lưu trữ và đánh giá cao nhất trên hệ thống
+                Wandora.
               </Typography>
             </Box>
 
@@ -625,7 +740,10 @@ export function PublicHome({ stats, featuredPlaces }: PublicHomeProps = {}) {
                       },
                     }}
                   >
-                    <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                    <Stack
+                      direction="row"
+                      sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 2 }}
+                    >
                       <Box
                         sx={{
                           px: 1.5,
@@ -737,26 +855,40 @@ export function PublicHome({ stats, featuredPlaces }: PublicHomeProps = {}) {
       )}
 
       {/* ══════════════════ HOW IT WORKS ══════════════════ */}
-      <Box id="how-it-works" sx={{ py: { xs: 8, md: 12 }, bgcolor: featuredPlaces?.length ? '#f8fafc' : '#fff' }}>
+      <Box
+        id="how-it-works"
+        sx={{ py: { xs: 8, md: 12 }, bgcolor: featuredPlaces?.length ? '#f8fafc' : '#fff' }}
+      >
         <Container maxWidth="lg">
           <Grid container spacing={{ xs: 6, md: 10 }} sx={{ alignItems: 'center' }}>
             <Grid size={{ xs: 12, md: 5 }}>
               <Typography
                 sx={{
-                  fontSize: '.8125rem', fontWeight: 700, color: '#075985',
-                  letterSpacing: '0.12em', textTransform: 'uppercase', mb: 2,
+                  fontSize: '.8125rem',
+                  fontWeight: 700,
+                  color: '#075985',
+                  letterSpacing: '0.12em',
+                  textTransform: 'uppercase',
+                  mb: 2,
                 }}
               >
                 Cách hoạt động
               </Typography>
               <Typography
                 component="h2"
-                sx={{ fontSize: { xs: '1.875rem', md: '2.25rem' }, fontWeight: 800, color: '#163047', letterSpacing: '-0.01em', mb: 2 }}
+                sx={{
+                  fontSize: { xs: '1.875rem', md: '2.25rem' },
+                  fontWeight: 800,
+                  color: '#163047',
+                  letterSpacing: '-0.01em',
+                  mb: 2,
+                }}
               >
                 Đơn giản từ bước đầu tiên.
               </Typography>
               <Typography color="text.secondary" sx={{ lineHeight: 1.75 }}>
-                Hệ thống được thiết kế để quản trị viên có thể onboard thành viên và bắt đầu quản lý dữ liệu du lịch ngay lập tức.
+                Hệ thống được thiết kế để quản trị viên có thể onboard thành viên và bắt đầu quản lý
+                dữ liệu du lịch ngay lập tức.
               </Typography>
               <Button
                 component={Link}
@@ -798,9 +930,21 @@ export function PublicHome({ stats, featuredPlaces }: PublicHomeProps = {}) {
       </Box>
 
       {/* ══════════════════ TECH STACK ══════════════════ */}
-      <Box id="tech-stack" sx={{ py: { xs: 6, md: 8 }, bgcolor: '#f8fafc', borderTop: '1px solid #e2ecf3' }}>
+      <Box
+        id="tech-stack"
+        sx={{ py: { xs: 6, md: 8 }, bgcolor: '#f8fafc', borderTop: '1px solid #e2ecf3' }}
+      >
         <Container maxWidth="lg">
-          <Typography sx={{ textAlign: 'center', fontSize: '.8125rem', fontWeight: 600, color: '#516579', mb: 4, letterSpacing: '0.08em' }}>
+          <Typography
+            sx={{
+              textAlign: 'center',
+              fontSize: '.8125rem',
+              fontWeight: 600,
+              color: '#516579',
+              mb: 4,
+              letterSpacing: '0.08em',
+            }}
+          >
             ĐƯỢC XÂY DỰNG TRÊN NỀN TẢNG
           </Typography>
           <Stack
@@ -812,22 +956,25 @@ export function PublicHome({ stats, featuredPlaces }: PublicHomeProps = {}) {
               alignItems: 'center',
             }}
           >
-            {['Next.js 16', 'TypeScript', 'Neo4j', 'MongoDB', 'Redis', 'Cassandra', 'MUI v9'].map((tech) => (
-              <Box
-                key={tech}
-                sx={{
-                  px: 2.5, py: 1,
-                  borderRadius: 99,
-                  border: '1px solid #bdccd5',
-                  bgcolor: '#fff',
-                  color: '#516579',
-                  fontSize: '.8125rem',
-                  fontWeight: 600,
-                }}
-              >
-                {tech}
-              </Box>
-            ))}
+            {['Next.js 16', 'TypeScript', 'Neo4j', 'MongoDB', 'Redis', 'Cassandra', 'MUI v9'].map(
+              (tech) => (
+                <Box
+                  key={tech}
+                  sx={{
+                    px: 2.5,
+                    py: 1,
+                    borderRadius: 99,
+                    border: '1px solid #bdccd5',
+                    bgcolor: '#fff',
+                    color: '#516579',
+                    fontSize: '.8125rem',
+                    fontWeight: 600,
+                  }}
+                >
+                  {tech}
+                </Box>
+              ),
+            )}
           </Stack>
         </Container>
       </Box>
@@ -870,9 +1017,13 @@ export function PublicHome({ stats, featuredPlaces }: PublicHomeProps = {}) {
             Sẵn sàng bắt đầu hành trình?
           </Typography>
           <Typography sx={{ mt: 2.5, color: 'rgba(255,255,255,0.65)', lineHeight: 1.75 }}>
-            Đăng nhập để truy cập không gian cá nhân, quản lý địa điểm và khám phá những hành trình mới.
+            Đăng nhập để truy cập không gian cá nhân, quản lý địa điểm và khám phá những hành trình
+            mới.
           </Typography>
-          <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ mt: 5, gap: 2, justifyContent: 'center' }}>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            sx={{ mt: 5, gap: 2, justifyContent: 'center' }}
+          >
             <Button
               component={Link}
               href="/login"

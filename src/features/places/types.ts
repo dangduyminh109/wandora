@@ -9,6 +9,8 @@ export type Place = {
   location: { type: 'Point'; coordinates: [number, number] };
   images: string[];
   tags: string[];
+  // Mã tiện ích chuẩn (xem amenities.ts), tự tính từ category, tags, khách sạn, nhà hàng, dịch vụ.
+  amenities: string[];
   ratingAvg: number;
   ratingCount: number;
   createdAt: string;

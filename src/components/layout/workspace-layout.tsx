@@ -18,7 +18,12 @@ export function WorkspaceLayout({
 }) {
   return (
     <Box sx={{ display: 'flex', minHeight: '100dvh' }}>
-      <Sidebar admin={admin} footer={sidebarFooter} compactFooter={compactSidebarFooter} />
+      <Sidebar
+        admin={admin}
+        isAdmin={user.role === 'admin'}
+        footer={sidebarFooter}
+        compactFooter={compactSidebarFooter}
+      />
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Header user={user} admin={admin} />
         <Container

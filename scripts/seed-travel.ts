@@ -2,6 +2,7 @@ import type { Document } from 'mongodb';
 import { ObjectId } from 'mongodb';
 import { closeMongo, getMongo } from '../src/lib/db/mongodb';
 import { slugify } from '../src/lib/slug';
+import { refreshAllPlaceAmenities } from '../src/features/places/server/amenity-sync';
 import { buildSeed } from './seed-data/generate';
 
 // Chạy lại nhiều lần vẫn an toàn: mỗi bản ghi được upsert theo slug, không tạo bản sao.
@@ -57,6 +58,9 @@ async function main() {
       totals[kind] += operations.length;
     }
   }
+
+  // Tiện ích suy ra từ dữ liệu con nên phải tính sau khi nạp xong (cũng sửa luôn các bản ghi seed cũ).
+  await refreshAllPlaceAmenities(db);
 
   console.log('Đã nạp dữ liệu mẫu:', totals);
   for (const name of ['places', 'hotels', 'restaurants', 'services']) {

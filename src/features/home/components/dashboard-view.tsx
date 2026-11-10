@@ -40,7 +40,7 @@ import type { User } from '@/types/user';
 
 type RecResponse = {
   personalized: Place[];
-  strategy: 'collaborative' | 'content_based' | 'trending';
+  strategy: 'collaborative' | 'interest' | 'content_based' | 'trending';
   trending: Place[];
 };
 interface DashboardStats {
@@ -202,21 +202,6 @@ export function DashboardView({ user }: { user: User }) {
             >
               Hồ sơ cá nhân
             </Button>
-            {user.role === 'admin' && (
-              <Button
-                component={Link}
-                href="/admin"
-                variant="contained"
-                sx={{
-                  bgcolor: '#fff',
-                  color: '#075985',
-                  fontWeight: 700,
-                  '&:hover': { bgcolor: '#f0f9ff' },
-                }}
-              >
-                Trang quản trị
-              </Button>
-            )}
           </Stack>
         </Stack>
 
@@ -334,9 +319,11 @@ export function DashboardView({ user }: { user: User }) {
             <Typography variant="body2" color="text.secondary">
               {stats?.strategy === 'collaborative'
                 ? 'Dựa trên người dùng có sở thích tương tự bạn'
-                : stats?.strategy === 'content_based'
-                  ? 'Dựa trên danh mục và vùng miền bạn quan tâm'
-                  : 'Gợi ý các điểm đến nổi bật nhất hệ thống'}
+                : stats?.strategy === 'interest'
+                  ? 'Dựa trên các tiện ích bạn đã tìm kiếm'
+                  : stats?.strategy === 'content_based'
+                    ? 'Dựa trên danh mục và vùng miền bạn quan tâm'
+                    : 'Gợi ý các điểm đến nổi bật nhất hệ thống'}
             </Typography>
           </Box>
           <Button

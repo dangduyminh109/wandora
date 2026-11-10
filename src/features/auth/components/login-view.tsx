@@ -1,11 +1,6 @@
 'use client';
 import { Box, Stack, Typography } from '@mui/material';
-import {
-  MapPinIcon,
-  BedIcon,
-  ForkKnifeIcon,
-  ShieldCheckIcon,
-} from '@phosphor-icons/react';
+import { MapPinIcon, BedIcon, ForkKnifeIcon, ShieldCheckIcon } from '@phosphor-icons/react';
 import { LoginForm } from './login-form';
 
 const highlights = [
@@ -19,7 +14,14 @@ function GridPattern() {
   return (
     <svg
       aria-hidden="true"
-      style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.07, pointerEvents: 'none' }}
+      style={{
+        position: 'absolute',
+        inset: 0,
+        width: '100%',
+        height: '100%',
+        opacity: 0.07,
+        pointerEvents: 'none',
+      }}
     >
       <defs>
         <pattern id="login-grid" width="40" height="40" patternUnits="userSpaceOnUse">
@@ -31,7 +33,7 @@ function GridPattern() {
   );
 }
 
-export function LoginView() {
+export function LoginView({ redirectTo }: { redirectTo?: string }) {
   return (
     <Box sx={{ display: 'flex', minHeight: 'calc(100dvh - 64px)' }}>
       {/* ── LEFT PANEL: visual/brand ── */}
@@ -52,8 +54,12 @@ export function LoginView() {
         <Box
           aria-hidden="true"
           sx={{
-            position: 'absolute', bottom: '-10%', right: '-10%',
-            width: 400, height: 400, borderRadius: '50%',
+            position: 'absolute',
+            bottom: '-10%',
+            right: '-10%',
+            width: 400,
+            height: 400,
+            borderRadius: '50%',
             background: 'radial-gradient(circle, rgba(14,165,233,0.25) 0%, transparent 70%)',
             filter: 'blur(30px)',
           }}
@@ -62,8 +68,12 @@ export function LoginView() {
           {/* Logo mark */}
           <Box
             sx={{
-              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-              width: 56, height: 56, borderRadius: 2.5,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 56,
+              height: 56,
+              borderRadius: 2.5,
               bgcolor: 'rgba(255,255,255,0.12)',
               mb: 4,
             }}
@@ -88,7 +98,9 @@ export function LoginView() {
             kết nối mọi điểm đến.
           </Typography>
 
-          <Typography sx={{ mt: 3, color: 'rgba(255,255,255,0.6)', lineHeight: 1.75, maxWidth: 360 }}>
+          <Typography
+            sx={{ mt: 3, color: 'rgba(255,255,255,0.6)', lineHeight: 1.75, maxWidth: 360 }}
+          >
             Nền tảng tập trung địa điểm, lưu trú và ẩm thực vào một không gian quản trị thống nhất.
           </Typography>
 
@@ -98,13 +110,19 @@ export function LoginView() {
               <Stack key={text} direction="row" sx={{ gap: 2, alignItems: 'center' }}>
                 <Box
                   sx={{
-                    display: 'inline-flex', p: 1, borderRadius: 1.5,
-                    bgcolor: 'rgba(14,165,233,0.18)', color: '#38bdf8', flexShrink: 0,
+                    display: 'inline-flex',
+                    p: 1,
+                    borderRadius: 1.5,
+                    bgcolor: 'rgba(14,165,233,0.18)',
+                    color: '#38bdf8',
+                    flexShrink: 0,
                   }}
                 >
                   <Icon size={18} weight="duotone" aria-hidden="true" />
                 </Box>
-                <Typography sx={{ color: 'rgba(255,255,255,0.8)', fontSize: '.9375rem', fontWeight: 500 }}>
+                <Typography
+                  sx={{ color: 'rgba(255,255,255,0.8)', fontSize: '.9375rem', fontWeight: 500 }}
+                >
                   {text}
                 </Typography>
               </Stack>
@@ -114,14 +132,21 @@ export function LoginView() {
           {/* Bottom badge */}
           <Box
             sx={{
-              mt: 8, display: 'inline-flex', alignItems: 'center', gap: 1.5,
-              px: 2, py: 1, borderRadius: 99,
+              mt: 8,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 1.5,
+              px: 2,
+              py: 1,
+              borderRadius: 99,
               border: '1px solid rgba(255,255,255,0.12)',
               bgcolor: 'rgba(255,255,255,0.06)',
             }}
           >
             <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#4ade80' }} />
-            <Typography sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '.8125rem', fontWeight: 500 }}>
+            <Typography
+              sx={{ color: 'rgba(255,255,255,0.6)', fontSize: '.8125rem', fontWeight: 500 }}
+            >
               Nhóm 404 · Đồ án NoSQL
             </Typography>
           </Box>
@@ -163,7 +188,7 @@ export function LoginView() {
             Đăng nhập để tiếp tục hành trình của bạn.
           </Typography>
 
-          <LoginForm />
+          <LoginForm redirectTo={redirectTo} />
 
           <Typography variant="body2" color="text.secondary" sx={{ mt: 5, textAlign: 'center' }}>
             Chưa có tài khoản? Liên hệ quản trị viên để được cấp quyền truy cập.

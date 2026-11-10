@@ -19,7 +19,6 @@ import { useTheme } from '@mui/material/styles';
 import {
   HouseIcon,
   UsersIcon,
-  SquaresFourIcon,
   CompassIcon,
   XIcon,
   UserCircleIcon,
@@ -39,10 +38,12 @@ export const SIDEBAR_COLLAPSED_WIDTH = 80;
 
 export function Sidebar({
   admin = false,
+  isAdmin = admin,
   footer,
   compactFooter,
 }: {
-  admin?: boolean;
+  admin?: boolean; // đang ở khu quản trị (/admin/*)
+  isAdmin?: boolean; // tài khoản có vai trò admin (để hiện lối sang khu quản trị)
   footer?: React.ReactNode;
   compactFooter?: React.ReactNode;
 }) {
@@ -57,19 +58,14 @@ export function Sidebar({
   const links = admin
     ? [
         { href: '/admin', label: 'Tổng quan', icon: HouseIcon },
-        { href: '/explore', label: 'Khám phá', icon: MagnifyingGlassIcon },
-        { href: '/favorites', label: 'Yêu thích', icon: HeartIcon },
         { href: '/admin/users', label: 'Người dùng', icon: UsersIcon },
         { href: '/admin/places', label: 'Địa điểm', icon: MapPinIcon },
         { href: '/admin/hotels', label: 'Khách sạn', icon: BedIcon },
         { href: '/admin/restaurants', label: 'Nhà hàng', icon: ForkKnifeIcon },
         { href: '/admin/services', label: 'Dịch vụ', icon: TicketIcon },
-        { href: '/admin/components', label: 'Component mẫu', icon: SquaresFourIcon },
-        { href: '/dashboard', label: 'Không gian cá nhân', icon: CompassIcon },
-        { href: '/profile', label: 'Tài khoản', icon: UserCircleIcon },
-        { href: '/activity', label: 'Lịch sử hoạt động', icon: ClockCounterClockwiseIcon },
       ]
     : [
+        ...(isAdmin ? [{ href: '/admin', label: 'Trang quản trị', icon: HouseIcon }] : []),
         { href: '/explore', label: 'Khám phá', icon: MagnifyingGlassIcon },
         { href: '/favorites', label: 'Yêu thích', icon: HeartIcon },
         { href: '/dashboard', label: 'Không gian cá nhân', icon: CompassIcon },
