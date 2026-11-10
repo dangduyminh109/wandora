@@ -31,7 +31,10 @@ export function RelatedPlaces({ placeId }: { placeId: string }) {
   if (!loading && places.length === 0) return null;
 
   return (
-    <Card title="Địa điểm tương tự bạn có thể thích" description="Gợi ý cùng danh mục và khu vực từ đồ thị">
+    <Card
+      title="Địa điểm tương tự bạn có thể thích"
+      description="Gợi ý cùng danh mục và khu vực từ đồ thị"
+    >
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
           <CircularProgress size={28} />
@@ -62,10 +65,18 @@ export function RelatedPlaces({ placeId }: { placeId: string }) {
               <CardActionArea
                 component={Link}
                 href={`/explore/${place.slug}`}
-                sx={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}
+                sx={{
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'stretch',
+                }}
               >
                 <CardContent sx={{ flexGrow: 1, p: 2 }}>
-                  <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                  <Stack
+                    direction="row"
+                    sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 1 }}
+                  >
                     <Badge label={categoryLabel(place.category)} color="primary" />
                     <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
                       <StarIcon size={14} weight="fill" color="#eab308" />
@@ -77,7 +88,11 @@ export function RelatedPlaces({ placeId }: { placeId: string }) {
                   <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5 }}>
                     {place.name}
                   </Typography>
-                  <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center', color: 'text.secondary' }}>
+                  <Stack
+                    direction="row"
+                    spacing={0.5}
+                    sx={{ alignItems: 'center', color: 'text.secondary' }}
+                  >
                     <MapPinIcon size={14} />
                     <Typography variant="caption" noWrap>
                       {place.region}

@@ -8,11 +8,13 @@ import { toast } from 'sonner';
 import { api } from '@/lib/api-client';
 import { FormTextField } from '@/components/forms/form-text-field';
 import { SubmitButton } from '@/components/forms/submit-button';
+import type { User } from '@/types/user';
 import { loginSchema } from '../schemas';
+import { postLoginTarget } from '../routes';
 import Link from 'next/link';
 import { Link as MuiLink } from '@mui/material';
 import { FormPasswordField } from '@/components/forms/form-password-field';
-export function LoginForm() {
+export function LoginForm({ redirectTo }: { redirectTo?: string }) {
   const router = useRouter();
   const {
     control,
@@ -25,9 +27,12 @@ export function LoginForm() {
   });
   const submit = handleSubmit(async (data) => {
     try {
-      await api('/api/auth/login', { method: 'POST', body: JSON.stringify(data) });
+      const { user } = await api<{ user: User }>('/api/auth/login', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
       toast.success('Đăng nhập thành công.');
-      router.push('/dashboard');
+      router.push(postLoginTarget(user, redirectTo));
       router.refresh();
     } catch (error) {
       setError('root', {

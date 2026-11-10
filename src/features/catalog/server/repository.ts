@@ -5,6 +5,8 @@ import { cache } from '@/lib/cache';
 import { getMongo } from '@/lib/db/mongodb';
 import { HttpError } from '@/lib/http';
 import { slugify } from '@/lib/slug';
+import { refreshPlaceAmenities } from '@/features/places/server/amenity-sync';
+import { syncPlaceAmenityEdges } from '@/features/places/server/amenity-graph';
 import type { catalogQuerySchema } from '../schemas';
 
 export type CatalogItem<T extends { name: string; placeId: string }> = T & {
@@ -20,6 +22,15 @@ export type CatalogRepository<T extends { name: string; placeId: string }> = Ret
 
 const isDuplicateKey = (error: unknown) =>
   typeof error === 'object' && error !== null && 'code' in error && error.code === 11000;
+// Tính lại tiện ích của địa điểm rồi cập nhật đồ thị. Neo4j lỗi chỉ ghi log: MongoDB mới là nguồn đúng,
+// chạy `npm run db:sync-neo4j` để đồng bộ lại.
+async function refreshAmenities(placeId: ObjectId | string) {
+  const id = typeof placeId === 'string' ? placeId : placeId.toHexString();
+  const amenities = await refreshPlaceAmenities(await getMongo(), id);
+  await syncPlaceAmenityEdges([{ id, amenities }]).catch((err) =>
+    console.error('Lỗi đồng bộ tiện ích sang Neo4j:', err),
+  );
+}
 const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 // Repository dùng chung cho hotels, restaurants, services (cùng cấu trúc: placeId, name, slug…).
@@ -67,6 +78,7 @@ export function createCatalogRepository<T extends { name: string; placeId: strin
         };
         try {
           const { insertedId } = await col.insertOne(doc);
+          await refreshAmenities(input.placeId);
           await cache.invalidate();
           return toItem({ ...doc, _id: insertedId });
         } catch (error) {
@@ -119,17 +131,32 @@ export function createCatalogRepository<T extends { name: string; placeId: strin
         await ensurePlace(patch.placeId);
         set.placeId = new ObjectId(patch.placeId);
       }
-      const doc = await (
-        await collection()
-      ).findOneAndUpdate({ _id: new ObjectId(id) }, { $set: set }, { returnDocument: 'after' });
+      const col = await collection();
+      // Nếu chuyển sang địa điểm khác, địa điểm cũ cũng phải tính lại tiện ích.
+      const before = patch.placeId
+        ? await col.findOne({ _id: new ObjectId(id) }, { projection: { placeId: 1 } })
+        : null;
+      const doc = await col.findOneAndUpdate(
+        { _id: new ObjectId(id) },
+        { $set: set },
+        { returnDocument: 'after' },
+      );
       if (!doc) throw new HttpError(404, 'Không tìm thấy dữ liệu.');
+      await refreshAmenities(doc.placeId as ObjectId);
+      if (before && !(before.placeId as ObjectId).equals(doc.placeId as ObjectId))
+        await refreshAmenities(before.placeId as ObjectId);
       await cache.invalidate();
       return toItem(doc);
     },
 
     async remove(id: string) {
-      const result = await (await collection()).deleteOne({ _id: new ObjectId(id) });
-      if (result.deletedCount === 0) throw new HttpError(404, 'Không tìm thấy dữ liệu.');
+      const col = await collection();
+      const removed = await col.findOneAndDelete(
+        { _id: new ObjectId(id) },
+        { projection: { placeId: 1 } },
+      );
+      if (!removed) throw new HttpError(404, 'Không tìm thấy dữ liệu.');
+      await refreshAmenities(removed.placeId as ObjectId);
       await cache.invalidate();
     },
   };

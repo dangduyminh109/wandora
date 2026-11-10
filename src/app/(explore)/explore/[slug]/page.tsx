@@ -7,7 +7,11 @@ import { getPlaceDetail } from '@/features/places/server/detail';
 
 type Detail = Awaited<ReturnType<typeof getPlaceDetail>>['value'];
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
   const parsed = placeSlugSchema.safeParse((await params).slug);
   if (!parsed.success) return { title: 'Địa điểm' };
   try {

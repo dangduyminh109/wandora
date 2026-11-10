@@ -174,7 +174,10 @@ export async function listReviews(
   return { reviews: docs.map(toReview), total };
 }
 
-export async function getUserReviewForPlace(placeId: string, userId: string): Promise<Review | null> {
+export async function getUserReviewForPlace(
+  placeId: string,
+  userId: string,
+): Promise<Review | null> {
   const collection = await reviewsCollection();
   const doc = await collection.findOne({
     placeId: new ObjectId(placeId),

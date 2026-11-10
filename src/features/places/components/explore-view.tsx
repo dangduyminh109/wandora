@@ -1,11 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
 import {
-  Box,
-  Card as MuiCard,
-  CardActionArea,
-  CardContent,
   Container,
   MenuItem,
   Pagination,
@@ -14,16 +9,15 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { MapPinIcon, StarIcon } from '@phosphor-icons/react';
-import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { PageHeader } from '@/components/ui/page-header';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { api } from '@/lib/api-client';
-import { categoryLabel, placeCategories } from '../constants';
+import { placeCategories } from '../constants';
 import type { Place } from '../types';
-import { FavoriteButton } from './favorite-button';
+import { AmenitySearchPanel } from './amenity-search-panel';
+import { PlaceCard, PlaceGrid } from './place-card';
 
 const PAGE_SIZE = 12;
 const sortOptions = [
@@ -47,6 +41,8 @@ export function ExploreView() {
   const [result, setResult] = useState({ places: [] as Place[], total: 0 });
   const [resolvedKey, setResolvedKey] = useState('');
   const [error, setError] = useState('');
+  // Đang xem kết quả tìm theo tiện ích: ẩn danh sách thường, vô hiệu ô tìm từ khóa và sắp xếp.
+  const [amenityActive, setAmenityActive] = useState(false);
 
   // "Phù hợp nhất" chỉ có ý nghĩa khi có từ khóa; không có thì xếp theo đánh giá cao.
   const effectiveSort = sortBy === 'relevance' && !debounced ? 'ratingAvg' : sortBy;
@@ -122,6 +118,7 @@ export function ExploreView() {
           label="Tìm kiếm"
           placeholder="Nhập tên, mô tả hoặc thẻ…"
           value={search}
+          disabled={amenityActive}
           onChange={(e) => setSearch(e.target.value)}
           sx={{ flex: 2 }}
         />
@@ -169,6 +166,7 @@ export function ExploreView() {
           select
           label="Sắp xếp"
           value={sortBy}
+          disabled={amenityActive}
           onChange={(e) => change(() => setSortBy(e.target.value))}
           sx={{ flex: 1, minWidth: 150 }}
         >
@@ -180,7 +178,14 @@ export function ExploreView() {
         </TextField>
       </Stack>
 
-      {error && resolvedKey === requestKey ? (
+      <AmenitySearchPanel
+        category={category}
+        region={region}
+        minRating={minRating}
+        onActiveChange={setAmenityActive}
+      />
+
+      {amenityActive ? null : error && resolvedKey === requestKey ? (
         <ErrorState message={error} onRetry={() => setReload((value) => value + 1)} />
       ) : (
         <>
@@ -188,22 +193,22 @@ export function ExploreView() {
             {loading ? 'Đang tìm…' : `${result.total} địa điểm`}
           </Typography>
           {loading && result.places.length === 0 ? (
-            <Grid>
+            <PlaceGrid>
               {Array.from({ length: 6 }, (_, i) => (
                 <Skeleton key={i} variant="rounded" height={180} />
               ))}
-            </Grid>
+            </PlaceGrid>
           ) : result.places.length === 0 ? (
             <EmptyState
               title="Không tìm thấy địa điểm"
               description="Thử từ khóa khác hoặc bỏ bớt bộ lọc."
             />
           ) : (
-            <Grid sx={{ opacity: loading ? 0.6 : 1, transition: 'opacity 150ms' }}>
+            <PlaceGrid sx={{ opacity: loading ? 0.6 : 1, transition: 'opacity 150ms' }}>
               {result.places.map((place) => (
                 <PlaceCard key={place.id} place={place} />
               ))}
-            </Grid>
+            </PlaceGrid>
           )}
           {result.total > PAGE_SIZE && (
             <Stack sx={{ alignItems: 'center', mt: 4 }}>
@@ -218,64 +223,5 @@ export function ExploreView() {
         </>
       )}
     </Container>
-  );
-}
-
-function Grid({ children, sx }: { children: React.ReactNode; sx?: object }) {
-  return (
-    <Box
-      sx={{
-        display: 'grid',
-        gap: 2,
-        gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', lg: 'repeat(3, 1fr)' },
-        ...sx,
-      }}
-    >
-      {children}
-    </Box>
-  );
-}
-
-function PlaceCard({ place }: { place: Place }) {
-  return (
-    <MuiCard variant="outlined" sx={{ position: 'relative' }}>
-      <Box sx={{ position: 'absolute', top: 18, right: 18, zIndex: 2 }}>
-        <FavoriteButton placeId={place.id} size="small" />
-      </Box>
-      <CardActionArea component={Link} href={`/explore/${place.slug}`} sx={{ height: '100%' }}>
-        <CardContent sx={{ p: 3 }}>
-          <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', gap: 1, mb: 1, pr: 4.5 }}>
-            <Badge label={categoryLabel(place.category)} />
-            <Stack direction="row" sx={{ alignItems: 'center', gap: 0.5 }}>
-              <StarIcon size={16} weight="fill" aria-hidden="true" color="#eab308" />
-              <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                {place.ratingCount > 0 ? place.ratingAvg.toFixed(1) : 'Mới'}
-              </Typography>
-            </Stack>
-          </Stack>
-          <Typography variant="h4" component="h2" sx={{ mb: 0.5 }}>
-            {place.name}
-          </Typography>
-          <Stack direction="row" sx={{ alignItems: 'center', gap: 0.5, mb: 1.5 }}>
-            <MapPinIcon size={16} aria-hidden="true" />
-            <Typography variant="body2" color="text.secondary">
-              {place.region}
-            </Typography>
-          </Stack>
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{
-              display: '-webkit-box',
-              WebkitLineClamp: 3,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-            }}
-          >
-            {place.description}
-          </Typography>
-        </CardContent>
-      </CardActionArea>
-    </MuiCard>
   );
 }

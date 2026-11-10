@@ -5,11 +5,14 @@ import { cache, CACHE_TTL_SECONDS } from '@/lib/cache';
 import { getMongo } from '@/lib/db/mongodb';
 import { HttpError } from '@/lib/http';
 import { slugify } from '@/lib/slug';
+import { deriveAmenities } from '../amenities';
+import { refreshPlaceAmenities } from './amenity-sync';
+import { syncPlaceAmenityEdges } from './amenity-graph';
 import { deletePlaceNode, upsertPlaceNode } from './graph';
 import type { placeInputSchema, placeUpdateSchema, placesQuerySchema } from '../schemas';
 import type { Place } from '../types';
 
-type PlaceDoc = Omit<Place, 'id' | 'createdAt' | 'updatedAt'> & {
+export type PlaceDoc = Omit<Place, 'id' | 'createdAt' | 'updatedAt'> & {
   createdAt: Date;
   updatedAt: Date;
 };
@@ -18,15 +21,22 @@ async function placesCollection() {
   return (await getMongo()).collection<PlaceDoc>('places');
 }
 
-function toPlace(doc: WithId<PlaceDoc>): Place {
+export function toPlace(doc: WithId<PlaceDoc>): Place {
   const { _id, createdAt, updatedAt, ...rest } = doc;
   delete (rest as { score?: number }).score; // điểm $text chỉ dùng để sắp xếp, không trả ra ngoài
   return {
     ...rest,
+    amenities: rest.amenities ?? [], // bản ghi cũ chưa chạy db:backfill-amenities
     id: _id.toHexString(),
     createdAt: createdAt.toISOString(),
     updatedAt: updatedAt.toISOString(),
   };
+}
+
+// Node Place trước, rồi mới tới HAS_AMENITY (cần node Place đã tồn tại).
+async function syncPlaceGraph(place: Place) {
+  await upsertPlaceNode(place);
+  await syncPlaceAmenityEdges([{ id: place.id, amenities: place.amenities }]);
 }
 
 const isDuplicateKey = (error: unknown) =>
@@ -40,6 +50,13 @@ export async function createPlace(input: z.output<typeof placeInputSchema>) {
     const doc: PlaceDoc = {
       ...input,
       slug: attempt === 1 ? base : `${base}-${attempt}`,
+      // Địa điểm mới chưa có khách sạn/nhà hàng/dịch vụ nên chỉ suy ra từ category và tags.
+      amenities: deriveAmenities({
+        place: input,
+        hotels: [],
+        restaurants: [],
+        services: [],
+      }),
       ratingAvg: 0,
       ratingCount: 0,
       createdAt: now,
@@ -49,7 +66,7 @@ export async function createPlace(input: z.output<typeof placeInputSchema>) {
       const { insertedId } = await collection.insertOne(doc);
       await cache.invalidate();
       const created = toPlace({ ...doc, _id: insertedId });
-      await upsertPlaceNode(created).catch((err) =>
+      await syncPlaceGraph(created).catch((err) =>
         console.error('Lỗi đồng bộ Place sang Neo4j:', err),
       );
       return created;
@@ -128,11 +145,13 @@ export async function updatePlace(id: string, input: z.output<typeof placeUpdate
     { returnDocument: 'after' },
   );
   if (!doc) throw new HttpError(404, 'Không tìm thấy địa điểm.');
+  // Đổi category/tags có thể làm thay đổi tiện ích suy ra.
+  if (input.category !== undefined || input.tags !== undefined) {
+    doc.amenities = await refreshPlaceAmenities(await getMongo(), doc._id);
+  }
   await cache.invalidate();
   const updated = toPlace(doc);
-  await upsertPlaceNode(updated).catch((err) =>
-    console.error('Lỗi đồng bộ Place sang Neo4j:', err),
-  );
+  await syncPlaceGraph(updated).catch((err) => console.error('Lỗi đồng bộ Place sang Neo4j:', err));
   return updated;
 }
 
@@ -147,8 +166,6 @@ export async function deletePlace(id: string) {
       db.collection(name).deleteMany({ placeId }),
     ),
   );
-  await deletePlaceNode(id).catch((err) =>
-    console.error('Lỗi xóa Place khỏi Neo4j:', err),
-  );
+  await deletePlaceNode(id).catch((err) => console.error('Lỗi xóa Place khỏi Neo4j:', err));
   await cache.invalidate();
 }

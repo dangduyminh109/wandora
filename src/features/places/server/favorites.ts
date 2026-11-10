@@ -6,7 +6,10 @@ import { getMongo } from '@/lib/db/mongodb';
 import { HttpError } from '@/lib/http';
 import type { Place } from '../types';
 
-export async function toggleFavorite(userId: string, placeId: string): Promise<{ favorited: boolean }> {
+export async function toggleFavorite(
+  userId: string,
+  placeId: string,
+): Promise<{ favorited: boolean }> {
   const db = await getMongo();
   const place = await db.collection('places').findOne({ _id: new ObjectId(placeId) });
   if (!place) throw new HttpError(404, 'Không tìm thấy địa điểm.');

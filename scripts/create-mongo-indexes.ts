@@ -12,6 +12,7 @@ async function main() {
     { key: { location: '2dsphere' }, name: 'places_geo' },
     { key: { category: 1, region: 1 }, name: 'places_category_region' },
     { key: { ratingAvg: -1 }, name: 'places_rating' },
+    { key: { amenities: 1 }, name: 'places_amenities' },
   ]);
   await db.collection('hotels').createIndexes([
     { key: { slug: 1 }, name: 'hotels_slug_unique', unique: true },

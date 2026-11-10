@@ -34,7 +34,8 @@ export async function handleApi(action: () => Promise<NextResponse>) {
         : error instanceof ZodError
           ? 'Kiểm tra lại thông tin đã nhập.'
           : 'Dịch vụ chưa sẵn sàng. Vui lòng thử lại sau.';
-    if (status === 503) console.error('API dependency or configuration failure');
+    // Ghi lỗi thật ở phía máy chủ (client vẫn chỉ nhận thông báo chung) để không phải đoán nguyên nhân 503.
+    if (status === 503) console.error('API dependency or configuration failure:', error);
     return NextResponse.json(
       { error: message },
       { status, headers: { 'Cache-Control': 'no-store' } },

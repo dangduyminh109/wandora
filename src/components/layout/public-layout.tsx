@@ -6,6 +6,7 @@ import { Box, Button, Container, Divider, Stack, Typography } from '@mui/materia
 import { Brand } from './brand';
 import { SmoothScroll } from '../common/smooth-scroll';
 import { api } from '@/lib/api-client';
+import { homeForRole } from '@/features/auth/routes';
 
 const HEADER_HEIGHT = 64; // px
 const isHeroRoute = (pathname: string) => pathname === '/';
@@ -42,7 +43,14 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
   const headerSolid = !hero || heroScrolled;
 
   return (
-    <Box sx={{ minHeight: '100dvh', bgcolor: 'background.paper', display: 'flex', flexDirection: 'column' }}>
+    <Box
+      sx={{
+        minHeight: '100dvh',
+        bgcolor: 'background.paper',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
       <SmoothScroll />
       {/* ── HEADER (fixed so it overlays the hero) ── */}
       <Box
@@ -94,15 +102,21 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
                 size="small"
                 sx={{
                   color: pathname.startsWith('/explore')
-                    ? (headerSolid ? '#075985' : '#38bdf8')
-                    : (headerSolid ? '#334155' : 'rgba(255,255,255,0.9)'),
+                    ? headerSolid
+                      ? '#075985'
+                      : '#38bdf8'
+                    : headerSolid
+                      ? '#334155'
+                      : 'rgba(255,255,255,0.9)',
                   fontWeight: pathname.startsWith('/explore') ? 700 : 600,
                   fontSize: '.875rem',
                   px: 2,
                   py: 0.75,
                   borderRadius: 2,
                   bgcolor: pathname.startsWith('/explore')
-                    ? (headerSolid ? 'rgba(7,89,133,0.1)' : 'rgba(255,255,255,0.18)')
+                    ? headerSolid
+                      ? 'rgba(7,89,133,0.1)'
+                      : 'rgba(255,255,255,0.18)'
                     : 'transparent',
                   '&:hover': {
                     color: headerSolid ? '#075985' : '#fff',
@@ -170,7 +184,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
               {currentUser ? (
                 <Button
                   component={Link}
-                  href="/dashboard"
+                  href={homeForRole(currentUser.role as 'admin' | 'user')}
                   variant={headerSolid ? 'contained' : 'outlined'}
                   size="small"
                   sx={
@@ -183,7 +197,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
                       : { px: 2.5 }
                   }
                 >
-                  Không gian của bạn
+                  {currentUser.role === 'admin' ? 'Trang quản trị' : 'Không gian của bạn'}
                 </Button>
               ) : pathname !== '/login' ? (
                 <Button

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { objectIdPattern } from '@/lib/mongo-id';
+import { isAmenityCode } from './amenities';
 
 const geoPoint = z.object({
   type: z.literal('Point'),
@@ -42,6 +43,36 @@ export const placesQuerySchema = z.object({
   minRating: z.coerce.number().min(0).max(5).default(0),
   sortBy: z.enum(['createdAt', 'name', 'ratingAvg', 'relevance']).default('createdAt'),
   direction: z.enum(['asc', 'desc']).default('desc'),
+});
+
+export const MAX_SEARCH_AMENITIES = 10;
+
+// `amenities` nhận chuỗi phân tách bằng dấu phẩy (?amenities=pool,hotel). Mã lạ bị từ chối thay vì
+// bị bỏ qua âm thầm, để lỗi gõ sai không biến thành một lần tìm kiếm khác với ý người dùng.
+export const amenitySearchQuerySchema = z.object({
+  amenities: z
+    .string()
+    .trim()
+    .transform((value) => [
+      ...new Set(
+        value
+          .split(',')
+          .map((code) => code.trim())
+          .filter(Boolean),
+      ),
+    ])
+    .pipe(
+      z
+        .array(z.string())
+        .min(1, 'Chọn ít nhất một tiện ích.')
+        .max(MAX_SEARCH_AMENITIES, `Chọn tối đa ${MAX_SEARCH_AMENITIES} tiện ích.`)
+        .refine((codes) => codes.every(isAmenityCode), 'Có tiện ích không hợp lệ.'),
+    ),
+  category: z.string().trim().max(50).default(''),
+  region: z.string().trim().max(80).default(''),
+  minRating: z.coerce.number().min(0).max(5).default(0),
+  page: z.coerce.number().int().min(0).max(100000).default(0),
+  pageSize: z.coerce.number().int().min(1).max(50).default(12),
 });
 
 export const placeSlugSchema = z

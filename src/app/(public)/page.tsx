@@ -6,18 +6,19 @@ export const revalidate = 60; // Revalidate every minute
 async function getLandingData(): Promise<PublicHomeProps> {
   try {
     const db = await getMongo();
-    const [placesCount, hotelsCount, restaurantsCount, servicesCount, topPlaces] = await Promise.all([
-      db.collection('places').countDocuments(),
-      db.collection('hotels').countDocuments(),
-      db.collection('restaurants').countDocuments(),
-      db.collection('services').countDocuments(),
-      db
-        .collection('places')
-        .find({})
-        .sort({ ratingAvg: -1, ratingCount: -1 })
-        .limit(6)
-        .toArray(),
-    ]);
+    const [placesCount, hotelsCount, restaurantsCount, servicesCount, topPlaces] =
+      await Promise.all([
+        db.collection('places').countDocuments(),
+        db.collection('hotels').countDocuments(),
+        db.collection('restaurants').countDocuments(),
+        db.collection('services').countDocuments(),
+        db
+          .collection('places')
+          .find({})
+          .sort({ ratingAvg: -1, ratingCount: -1 })
+          .limit(6)
+          .toArray(),
+      ]);
 
     return {
       stats: {

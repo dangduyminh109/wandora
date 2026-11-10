@@ -17,6 +17,7 @@
     "db:ping-mongo": "tsx --env-file=.env.local scripts/ping-mongo.ts",
     "db:mongo-indexes": "tsx --env-file=.env.local scripts/create-mongo-indexes.ts",
     "db:seed-travel": "tsx --env-file=.env.local scripts/seed-travel.ts",
+    "db:backfill-amenities": "tsx --env-file=.env.local scripts/backfill-amenities.ts",
     "bench:cache": "tsx --conditions react-server --env-file=.env.local scripts/bench-cache.ts",
     "db:init-cassandra": "tsx --env-file=.env.local scripts/init-cassandra.ts",
     "test:activity": "tsx --env-file=.env.local scripts/smoke-activity.ts",
