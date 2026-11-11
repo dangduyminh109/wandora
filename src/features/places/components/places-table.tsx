@@ -13,8 +13,15 @@ import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { api } from '@/lib/api-client';
 import { categoryLabel } from '../constants';
 import type { Place } from '../types';
+import { EntityThumbnail } from './entity-thumbnail';
 
 const columns: TableColumn<Place>[] = [
+  {
+    id: 'image',
+    label: 'Ảnh',
+    width: 112,
+    render: (row) => <EntityThumbnail images={row.images} name={row.name} />,
+  },
   {
     id: 'name',
     label: 'Địa điểm',

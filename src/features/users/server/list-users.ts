@@ -18,7 +18,7 @@ export async function listUsers(input: z.output<typeof usersQuerySchema>) {
     return await session.executeRead(async (transaction) => {
       const count = await transaction.run(`${filter} RETURN count(u) AS total`, parameters);
       const rows = await transaction.run(
-        `${filter} RETURN u { .id, .name, .email, .role, .createdAt, status: coalesce(u.status, 'active'), phone: coalesce(u.phone, ''), bio: coalesce(u.bio, '') } AS user ORDER BY u.${query.sortBy} ${query.direction === 'asc' ? 'ASC' : 'DESC'}, u.id ASC SKIP $offset LIMIT $limit`,
+        `${filter} RETURN u { .id, .name, .email, .role, .createdAt, status: coalesce(u.status, 'active'), phone: coalesce(u.phone, ''), bio: coalesce(u.bio, ''), avatar: coalesce(u.avatar, '') } AS user ORDER BY u.${query.sortBy} ${query.direction === 'asc' ? 'ASC' : 'DESC'}, u.id ASC SKIP $offset LIMIT $limit`,
         parameters,
       );
       return {

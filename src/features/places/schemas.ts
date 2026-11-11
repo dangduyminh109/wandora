@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { objectIdPattern } from '@/lib/mongo-id';
 import { isAmenityCode } from './amenities';
+import { imageListSchema } from './image-policy';
 
 const geoPoint = z.object({
   type: z.literal('Point'),
@@ -14,7 +15,7 @@ const fields = {
   region: z.string().trim().min(1).max(80),
   address: z.string().trim().max(200),
   location: geoPoint,
-  images: z.array(z.url()).max(10),
+  images: imageListSchema,
   tags: z.array(z.string().trim().min(1).max(30)).max(20),
 };
 

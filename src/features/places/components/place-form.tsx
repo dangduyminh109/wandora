@@ -16,9 +16,12 @@ import {
   type PlaceFormValues,
 } from '../form-schema';
 import type { Place } from '../types';
+import { useState } from 'react';
+import { PlaceImagesField } from './place-images-field';
 
 export function PlaceForm({ place }: { place?: Place }) {
   const router = useRouter();
+  const [uploading, setUploading] = useState(false);
   const {
     control,
     handleSubmit,
@@ -33,31 +36,37 @@ export function PlaceForm({ place }: { place?: Place }) {
     <Box
       component="form"
       noValidate
-      aria-busy={isSubmitting}
+      aria-busy={isSubmitting || uploading}
       sx={{
         display: 'grid',
         gap: 3,
         gridTemplateColumns: { xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' },
         '& .full': { gridColumn: '1 / -1' }, // ô chiếm cả hai cột
       }}
-      onSubmit={handleSubmit(async (data) => {
-        try {
-          const payload = JSON.stringify(placeFormToInput(data));
-          if (place) {
-            await api(`/api/places/${place.id}`, { method: 'PATCH', body: payload });
-            toast.success('Đã cập nhật địa điểm.');
-          } else {
-            await api('/api/places', { method: 'POST', body: payload });
-            toast.success('Đã thêm địa điểm.');
-          }
-          router.push('/admin/places');
-          router.refresh();
-        } catch (error) {
-          setError('root', {
-            message: error instanceof Error ? error.message : 'Không thể lưu địa điểm.',
-          });
+      onSubmit={(event) => {
+        if (uploading) {
+          event.preventDefault();
+          return;
         }
-      })}
+        return handleSubmit(async (data) => {
+          try {
+            const payload = JSON.stringify(placeFormToInput(data));
+            if (place) {
+              await api(`/api/places/${place.id}`, { method: 'PATCH', body: payload });
+              toast.success('Đã cập nhật địa điểm.');
+            } else {
+              await api('/api/places', { method: 'POST', body: payload });
+              toast.success('Đã thêm địa điểm.');
+            }
+            router.push('/admin/places');
+            router.refresh();
+          } catch (error) {
+            setError('root', {
+              message: error instanceof Error ? error.message : 'Không thể lưu địa điểm.',
+            });
+          }
+        })(event);
+      }}
     >
       <FormTextField
         control={control}
@@ -119,25 +128,20 @@ export function PlaceForm({ place }: { place?: Place }) {
         label="Thẻ (tags)"
         helperText="Cách nhau bằng dấu phẩy, ví dụ: biển, check-in, gia đình"
       />
-      <FormTextField
-        control={control}
-        name="images"
-        className="full"
-        label="Ảnh (mỗi dòng một đường dẫn URL)"
-        multiline
-        minRows={3}
-        helperText="Tối đa 10 ảnh. Bắt đầu bằng http:// hoặc https://"
-      />
+      <PlaceImagesField control={control} disabled={isSubmitting} onBusyChange={setUploading} />
       {errors.root && (
         <Alert severity="error" role="alert" className="full">
           {errors.root.message}
         </Alert>
       )}
       <Stack direction="row" spacing={2} className="full">
-        <SubmitButton pending={isSubmitting} pendingLabel="Đang lưu…">
+        <SubmitButton
+          pending={isSubmitting || uploading}
+          pendingLabel={uploading ? 'Đang tải ảnh…' : 'Đang lưu…'}
+        >
           {place ? 'Lưu thay đổi' : 'Thêm địa điểm'}
         </SubmitButton>
-        <Button onClick={() => router.push('/admin/places')} disabled={isSubmitting}>
+        <Button onClick={() => router.push('/admin/places')} disabled={isSubmitting || uploading}>
           Hủy
         </Button>
       </Stack>

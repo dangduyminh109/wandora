@@ -7,4 +7,5 @@ export type User = {
   status: 'active' | 'locked';
   phone: string;
   bio: string;
+  avatar?: string;
 };

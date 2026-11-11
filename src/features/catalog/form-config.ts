@@ -1,4 +1,5 @@
 import type { z } from 'zod';
+import { splitImageSources } from '@/features/places/image-policy';
 import {
   hotelInputSchema,
   restaurantInputSchema,
@@ -11,7 +12,7 @@ export type CatalogKind = 'hotels' | 'restaurants' | 'services';
 export type FieldDef = {
   name: string;
   label: string;
-  kind: 'text' | 'multiline' | 'select' | 'list';
+  kind: 'text' | 'multiline' | 'select' | 'list' | 'images';
   options?: { value: string; label: string }[];
   numeric?: boolean; // select có giá trị là số
   required?: boolean;
@@ -44,6 +45,7 @@ export const serviceTypeLabels: Record<string, string> = {
 };
 
 const contactFields: FieldDef[] = [
+  { name: 'images', label: 'Ảnh', kind: 'images' },
   { name: 'address', label: 'Địa chỉ', kind: 'text', maxLength: 200 },
   { name: 'phone', label: 'Số điện thoại', kind: 'text', maxLength: 30 },
   { name: 'website', label: 'Website', kind: 'text', helper: 'Bắt đầu bằng http:// hoặc https://' },
@@ -160,7 +162,12 @@ export function itemToForm(config: CatalogConfig, item: Record<string, unknown>)
   return Object.fromEntries(
     config.fields.map((field) => {
       const value = item[field.name];
-      return [field.name, Array.isArray(value) ? value.join(', ') : String(value ?? '')];
+      return [
+        field.name,
+        Array.isArray(value)
+          ? value.join(field.kind === 'images' ? '\n' : ', ')
+          : String(value ?? ''),
+      ];
     }),
   );
 }
@@ -170,7 +177,9 @@ export function formToInput(config: CatalogConfig, placeId: string, values: Form
   const input: Record<string, unknown> = { placeId };
   for (const field of config.fields) {
     const raw = (values[field.name] ?? '').trim();
-    if (field.kind === 'list') {
+    if (field.kind === 'images') {
+      input[field.name] = splitImageSources(raw);
+    } else if (field.kind === 'list') {
       input[field.name] = raw
         .split(',')
         .map((part) => part.trim())

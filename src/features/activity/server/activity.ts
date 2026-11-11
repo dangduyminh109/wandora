@@ -8,6 +8,7 @@ import { getRedis } from '@/lib/db/redis';
 import { recordAmenityInterest } from '@/features/places/server/amenity-graph';
 import { activityInputSchema, type Activity, type historyQuerySchema } from '../schemas';
 import { activityDays, summarizeActivity } from '../summary';
+import { recordPlaceViewInterest } from './behavior-graph';
 
 export async function recordActivity(userId: string, input: z.output<typeof activityInputSchema>) {
   const attempts = await (
@@ -27,7 +28,7 @@ export async function recordActivity(userId: string, input: z.output<typeof acti
     [
       userId,
       now.toISOString().slice(0, 10),
-      id,
+      id.toString(),
       now,
       input.type,
       place?.id ?? '',
@@ -38,6 +39,10 @@ export async function recordActivity(userId: string, input: z.output<typeof acti
     { prepare: true, isIdempotent: true },
   );
   // Sở thích tiện ích chỉ là tín hiệu phụ: Neo4j lỗi không được làm hỏng việc ghi lịch sử.
+  if (place)
+    await recordPlaceViewInterest(userId, place.id, now).catch((error) =>
+      console.error('Không đồng bộ được tín hiệu xem địa điểm sang Neo4j:', error),
+    );
   if (input.type === 'search' && input.amenities?.length)
     await recordAmenityInterest(userId, [...new Set(input.amenities)]).catch((error) =>
       console.error('Lỗi ghi sở thích tiện ích sang Neo4j:', error),
@@ -47,7 +52,7 @@ export async function recordActivity(userId: string, input: z.output<typeof acti
 
 export async function readHistory(userId: string, query: z.output<typeof historyQuerySchema>) {
   const params: unknown[] = [userId, query.day];
-  if (query.before) params.push(types.TimeUuid.fromString(query.before));
+  if (query.before) params.push(query.before);
   params.push(query.limit + 1);
   const result = await (
     await getCassandra()

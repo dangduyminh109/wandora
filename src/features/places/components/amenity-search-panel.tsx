@@ -1,6 +1,16 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Button, Chip, Pagination, Skeleton, Stack, Typography } from '@mui/material';
+import {
+  Box,
+  Button,
+  Chip,
+  Divider,
+  Pagination,
+  Paper,
+  Skeleton,
+  Stack,
+  Typography,
+} from '@mui/material';
 import { MagnifyingGlassIcon, XIcon } from '@phosphor-icons/react';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -28,10 +38,17 @@ type Props = {
   minRating: string;
   // Báo cho trang cha biết đang hiển thị kết quả theo tiện ích để ẩn danh sách thường.
   onActiveChange: (active: boolean) => void;
+  filters?: React.ReactNode;
 };
 
-// Tìm theo tiện ích: chọn nhiều tiện ích rồi bấm "Tìm theo tiện ích" mới gọi API (không tìm theo từng lần chọn).
-export function AmenitySearchPanel({ category, region, minRating, onActiveChange }: Props) {
+// Tìm theo tiện ích: chọn nhiều tiện ích rồi bấm "Áp dụng lọc tiện ích" mới gọi API (không tìm theo từng lần chọn).
+export function AmenitySearchPanel({
+  category,
+  region,
+  minRating,
+  onActiveChange,
+  filters,
+}: Props) {
   const [selected, setSelected] = useState<string[]>([]);
   // Bộ tiện ích đã được bấm tìm; đổi lựa chọn ở trên không làm kết quả bên dưới thay đổi cho tới lần bấm sau.
   const [submitted, setSubmitted] = useState<string[]>([]);
@@ -114,51 +131,148 @@ export function AmenitySearchPanel({ category, region, minRating, onActiveChange
   const pageCount = Math.max(1, Math.ceil((result?.total ?? 0) / PAGE_SIZE));
 
   return (
-    <Stack spacing={2} sx={{ mb: 3 }}>
-      <Typography variant="h4" component="h2">
-        Tìm theo tiện ích
-      </Typography>
-      <Stack
-        direction="row"
-        role="group"
-        aria-label="Chọn tiện ích"
-        sx={{ flexWrap: 'wrap', gap: 1 }}
+    <>
+      <Paper
+        variant="outlined"
+        sx={{
+          p: { xs: 2.5, md: 3 },
+          mb: 4,
+          borderRadius: 3,
+          bgcolor: 'background.paper',
+          borderColor: 'divider',
+          boxShadow: '0 4px 20px -2px rgba(7, 89, 133, 0.05)',
+        }}
       >
-        {amenityCatalog.map((item) => {
-          const on = selected.includes(item.value);
-          return (
-            <Chip
-              key={item.value}
-              label={item.label}
-              clickable
-              color={on ? 'primary' : 'default'}
-              variant={on ? 'filled' : 'outlined'}
-              onClick={() => toggle(item.value)}
-              aria-pressed={on}
-            />
-          );
-        })}
-      </Stack>
-      <Stack direction="row" spacing={1.5} sx={{ alignItems: 'center', flexWrap: 'wrap' }}>
-        <Button
-          variant="contained"
-          startIcon={<MagnifyingGlassIcon size={18} aria-hidden="true" />}
-          disabled={selected.length === 0}
-          onClick={search}
-        >
-          Tìm theo tiện ích
-        </Button>
-        {(selected.length > 0 || active) && (
-          <Button variant="text" startIcon={<XIcon size={16} aria-hidden="true" />} onClick={clear}>
-            Xóa lựa chọn
-          </Button>
-        )}
-        <Typography variant="body2" color="text.secondary">
-          {selected.length === 0
-            ? 'Chọn một hoặc nhiều tiện ích rồi bấm tìm.'
-            : `Đã chọn ${selected.length}/${MAX_SELECTED}`}
-        </Typography>
-      </Stack>
+        {filters}
+        {filters && <Divider sx={{ my: 2.5 }} />}
+
+        <Stack spacing={2}>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            sx={{
+              justifyContent: 'space-between',
+              alignItems: { sm: 'center' },
+              gap: 1,
+            }}
+          >
+            <Box>
+              <Typography
+                sx={{
+                  fontWeight: 700,
+                  fontSize: '.9375rem',
+                  color: '#163047',
+                }}
+              >
+                Tiện ích điểm đến
+              </Typography>
+              <Typography variant="caption" color="text.secondary">
+                Chọn các tiện ích bạn muốn có tại điểm đến (tối đa {MAX_SELECTED})
+              </Typography>
+            </Box>
+
+            {(selected.length > 0 || active) && (
+              <Button
+                variant="text"
+                size="small"
+                color="inherit"
+                startIcon={<XIcon size={14} />}
+                onClick={clear}
+                sx={{
+                  alignSelf: { xs: 'flex-start', sm: 'center' },
+                  color: 'text.secondary',
+                  fontSize: '.8125rem',
+                  borderRadius: 1.5,
+                }}
+              >
+                Xóa tiện ích đã chọn
+              </Button>
+            )}
+          </Stack>
+
+          <Stack
+            direction="row"
+            role="group"
+            aria-label="Chọn tiện ích"
+            sx={{ flexWrap: 'wrap', gap: 1 }}
+          >
+            {amenityCatalog.map((item) => {
+              const on = selected.includes(item.value);
+              return (
+                <Chip
+                  key={item.value}
+                  label={item.label}
+                  clickable
+                  color={on ? 'primary' : 'default'}
+                  variant={on ? 'filled' : 'outlined'}
+                  onClick={() => toggle(item.value)}
+                  aria-pressed={on}
+                  sx={{
+                    borderRadius: 2,
+                    fontWeight: on ? 600 : 500,
+                    fontSize: '.8125rem',
+                    transition: 'all 0.15s ease',
+                    ...(on
+                      ? {
+                          bgcolor: '#075985',
+                          color: '#fff',
+                          '&:hover': { bgcolor: '#0c4a6e' },
+                        }
+                      : {
+                          bgcolor: '#f8fafc',
+                          borderColor: '#e2e8f0',
+                          color: '#334155',
+                          '&:hover': { bgcolor: '#f1f5f9', borderColor: '#cbd5e1' },
+                        }),
+                  }}
+                />
+              );
+            })}
+          </Stack>
+
+          {selected.length > 0 ? (
+            <Stack
+              direction="row"
+              spacing={1.5}
+              sx={{ alignItems: 'center', pt: 0.5, flexWrap: 'wrap', gap: 1 }}
+            >
+              <Button
+                variant="contained"
+                size="small"
+                startIcon={<MagnifyingGlassIcon size={16} />}
+                onClick={search}
+                sx={{ borderRadius: 2, px: 2.5 }}
+              >
+                Áp dụng lọc tiện ích ({selected.length})
+              </Button>
+              <Typography variant="caption" color="text.secondary">
+                Bấm để xem danh sách địa điểm khớp với các tiện ích đã chọn
+              </Typography>
+            </Stack>
+          ) : !active ? (
+            <Typography variant="caption" sx={{ color: 'text.secondary', fontStyle: 'italic' }}>
+              💡 Chọn một hoặc nhiều tiện ích ở trên rồi bấm áp dụng để lọc điểm đến.
+            </Typography>
+          ) : (
+            <Box
+              sx={{
+                p: 1.25,
+                px: 2,
+                bgcolor: '#f0f9ff',
+                borderRadius: 2,
+                border: '1px solid #bae6fd',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 1,
+              }}
+            >
+              <Typography variant="caption" sx={{ color: '#0369a1', fontWeight: 600 }}>
+                ✓ Đang áp dụng lọc theo {submitted.length} tiện ích:{' '}
+                {submitted.map(amenityLabel).join(', ')}
+              </Typography>
+            </Box>
+          )}
+        </Stack>
+      </Paper>
 
       {active &&
         (error && resolvedKey === requestKey ? (
@@ -211,7 +325,7 @@ export function AmenitySearchPanel({ category, region, minRating, onActiveChange
             )}
           </>
         ))}
-    </Stack>
+    </>
   );
 }
 

@@ -23,6 +23,7 @@ import {
   type FormValues,
 } from '../form-config';
 import { PlaceAutocomplete, type PlaceOption } from './place-autocomplete';
+import { ImageAlbumField } from '@/features/places/components/place-images-field';
 
 export type EditableItem = { id: string; placeId: string } & Record<string, unknown>;
 
@@ -58,14 +59,16 @@ export function CatalogFormDialog({
       : defaultPlace,
   );
   const [placeError, setPlaceError] = useState('');
+  const [uploading, setUploading] = useState(false);
 
   return (
-    <Dialog open onClose={isSubmitting ? undefined : onClose} fullWidth maxWidth="sm">
+    <Dialog open onClose={isSubmitting || uploading ? undefined : onClose} fullWidth maxWidth="md">
       <DialogTitle>{item ? `Sửa ${config.singular}` : `Thêm ${config.singular}`}</DialogTitle>
       <form
         noValidate
-        aria-busy={isSubmitting}
+        aria-busy={isSubmitting || uploading}
         onSubmit={handleSubmit(async (values) => {
+          if (uploading) return;
           const result = validateForm(config, place?.id ?? null, values);
           if (!result.ok) {
             setPlaceError(result.errors.placeId ?? '');
@@ -102,26 +105,37 @@ export function CatalogFormDialog({
               required
               error={placeError}
             />
-            {config.fields.map((field) => (
-              <FormTextField
-                key={field.name}
-                control={control}
-                name={field.name}
-                label={field.label}
-                required={field.required}
-                select={field.kind === 'select'}
-                multiline={field.kind === 'multiline'}
-                minRows={field.kind === 'multiline' ? 3 : undefined}
-                helperText={field.helper}
-                slotProps={{ htmlInput: { maxLength: field.maxLength } }}
-              >
-                {field.options?.map((option) => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </FormTextField>
-            ))}
+            {config.fields.map((field) =>
+              field.kind === 'images' ? (
+                <ImageAlbumField
+                  key={field.name}
+                  control={control}
+                  name={field.name}
+                  label={`Ảnh ${config.singular}`}
+                  disabled={isSubmitting}
+                  onBusyChange={setUploading}
+                />
+              ) : (
+                <FormTextField
+                  key={field.name}
+                  control={control}
+                  name={field.name}
+                  label={field.label}
+                  required={field.required}
+                  select={field.kind === 'select'}
+                  multiline={field.kind === 'multiline'}
+                  minRows={field.kind === 'multiline' ? 3 : undefined}
+                  helperText={field.helper}
+                  slotProps={{ htmlInput: { maxLength: field.maxLength } }}
+                >
+                  {field.options?.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </FormTextField>
+              ),
+            )}
             {errors.root && (
               <Alert severity="error" role="alert">
                 {errors.root.message}
@@ -130,10 +144,10 @@ export function CatalogFormDialog({
           </Stack>
         </DialogContent>
         <DialogActions sx={{ p: 3, gap: 1 }}>
-          <Button onClick={onClose} disabled={isSubmitting}>
+          <Button onClick={onClose} disabled={isSubmitting || uploading}>
             Hủy
           </Button>
-          <SubmitButton pending={isSubmitting}>
+          <SubmitButton pending={isSubmitting || uploading}>
             {item ? 'Lưu thay đổi' : `Thêm ${config.singular}`}
           </SubmitButton>
         </DialogActions>

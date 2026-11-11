@@ -15,8 +15,10 @@ export function SessionGate() {
       .then((response) => {
         if (!active) return;
         if (response.ok) router.refresh();
-        else if (response.status === 401) router.replace('/login');
-        else setError('Không thể kết nối dịch vụ. Vui lòng thử lại.');
+        else if (response.status === 401) {
+          const target = window.location.pathname + window.location.search + window.location.hash;
+          router.replace(`/login?redirect=${encodeURIComponent(target)}`);
+        } else setError('Không thể kết nối dịch vụ. Vui lòng thử lại.');
       })
       .catch(() => {
         if (active) setError('Không thể kết nối dịch vụ. Vui lòng thử lại.');

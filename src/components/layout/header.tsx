@@ -1,8 +1,6 @@
 'use client';
 import {
   AppBar,
-  Avatar,
-  Box,
   IconButton,
   Stack,
   Toolbar,
@@ -13,6 +11,7 @@ import {
 import { useTheme } from '@mui/material/styles';
 import { ListIcon, SidebarSimpleIcon } from '@phosphor-icons/react';
 import { useUiStore } from '@/stores/ui-store';
+import { AccountMenu } from './account-menu';
 import type { User } from '@/types/user';
 export function Header({
   user,
@@ -71,17 +70,7 @@ export function Header({
           </Typography>
         </Stack>
         <Stack direction="row" sx={{ gap: 2, alignItems: 'center' }}>
-          <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main', fontSize: '.875rem' }}>
-            {user.name.charAt(0).toUpperCase()}
-          </Avatar>
-          <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-            <Typography variant="body2" sx={{ fontWeight: 600 }}>
-              {user.name}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {user.role === 'admin' ? 'Quản trị viên' : 'Người dùng'}
-            </Typography>
-          </Box>
+          <AccountMenu user={user} variant="profile" />
         </Stack>
       </Toolbar>
     </AppBar>

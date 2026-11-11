@@ -5,7 +5,13 @@ import { api } from '@/lib/api-client';
 import { Alert, Button, Stack, Tooltip } from '@mui/material';
 import { SignOutIcon } from '@phosphor-icons/react';
 import { toast } from 'sonner';
-export function LogoutButton({ compact = false }: { compact?: boolean }) {
+export function LogoutButton({
+  compact = false,
+  onLoggedOut,
+}: {
+  compact?: boolean;
+  onLoggedOut?: () => void;
+}) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
@@ -24,8 +30,9 @@ export function LogoutButton({ compact = false }: { compact?: boolean }) {
             setError('');
             try {
               await api('/api/auth/logout', { method: 'POST' });
+              onLoggedOut?.();
               toast.success('Đã đăng xuất.');
-              router.replace('/login');
+              router.replace('/');
               router.refresh();
             } catch (error) {
               setError(error instanceof Error ? error.message : 'Không thể đăng xuất.');

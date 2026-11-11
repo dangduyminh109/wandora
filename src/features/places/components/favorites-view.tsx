@@ -1,25 +1,13 @@
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import {
-  Box,
-  Card as MuiCard,
-  CardActionArea,
-  CardContent,
-  Pagination,
-  Skeleton,
-  Stack,
-  Typography,
-} from '@mui/material';
-import { MapPinIcon, StarIcon } from '@phosphor-icons/react';
-import { Badge } from '@/components/ui/badge';
+import { Box, Pagination, Skeleton, Stack, Typography } from '@mui/material';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { PageHeader } from '@/components/ui/page-header';
 import { api } from '@/lib/api-client';
-import { categoryLabel } from '../constants';
 import type { Place } from '../types';
-import { FavoriteButton } from './favorite-button';
+import { PlaceCard } from './place-card';
 
 const PAGE_SIZE = 12;
 
@@ -74,7 +62,7 @@ export function FavoritesView() {
           }}
         >
           {Array.from({ length: 6 }, (_, i) => (
-            <Skeleton key={i} variant="rounded" height={180} />
+            <Skeleton key={i} variant="rounded" height={420} />
           ))}
         </Box>
       ) : result.places.length === 0 ? (
@@ -102,63 +90,11 @@ export function FavoritesView() {
             }}
           >
             {result.places.map((place) => (
-              <MuiCard key={place.id} variant="outlined" sx={{ position: 'relative' }}>
-                <Box sx={{ position: 'absolute', top: 18, right: 18, zIndex: 2 }}>
-                  <FavoriteButton
-                    placeId={place.id}
-                    initialFavorited={true}
-                    size="small"
-                    onToggle={() => setReload((v) => v + 1)}
-                  />
-                </Box>
-                <CardActionArea
-                  component={Link}
-                  href={`/explore/${place.slug}`}
-                  sx={{ height: '100%' }}
-                >
-                  <CardContent sx={{ p: 3 }}>
-                    <Stack
-                      direction="row"
-                      sx={{
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        gap: 1,
-                        mb: 1,
-                        pr: 4.5,
-                      }}
-                    >
-                      <Badge label={categoryLabel(place.category)} />
-                      <Stack direction="row" sx={{ alignItems: 'center', gap: 0.5 }}>
-                        <StarIcon size={16} weight="fill" aria-hidden="true" color="#eab308" />
-                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                          {place.ratingCount > 0 ? place.ratingAvg.toFixed(1) : 'Mới'}
-                        </Typography>
-                      </Stack>
-                    </Stack>
-                    <Typography variant="h4" component="h2" sx={{ mb: 0.5 }}>
-                      {place.name}
-                    </Typography>
-                    <Stack direction="row" sx={{ alignItems: 'center', gap: 0.5, mb: 1.5 }}>
-                      <MapPinIcon size={16} aria-hidden="true" />
-                      <Typography variant="body2" color="text.secondary">
-                        {place.region}
-                      </Typography>
-                    </Stack>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{
-                        display: '-webkit-box',
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {place.description}
-                    </Typography>
-                  </CardContent>
-                </CardActionArea>
-              </MuiCard>
+              <PlaceCard
+                key={place.id}
+                place={place}
+                favoriteProps={{ initialFavorited: true, onToggle: () => setReload((v) => v + 1) }}
+              />
             ))}
           </Box>
           {result.total > PAGE_SIZE && (

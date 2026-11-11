@@ -14,7 +14,13 @@ import { postLoginTarget } from '../routes';
 import Link from 'next/link';
 import { Link as MuiLink } from '@mui/material';
 import { FormPasswordField } from '@/components/forms/form-password-field';
-export function LoginForm({ redirectTo }: { redirectTo?: string }) {
+export function LoginForm({
+  redirectTo,
+  registered = false,
+}: {
+  redirectTo?: string;
+  registered?: boolean;
+}) {
   const router = useRouter();
   const {
     control,
@@ -42,6 +48,11 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
   });
   return (
     <Stack component="form" noValidate onSubmit={submit} spacing={3} aria-busy={isSubmitting}>
+      {registered && (
+        <Alert severity="success" role="status">
+          Đăng ký thành công. Hãy đăng nhập bằng tài khoản vừa tạo.
+        </Alert>
+      )}
       <FormTextField
         control={control}
         name="email"
@@ -70,7 +81,13 @@ export function LoginForm({ redirectTo }: { redirectTo?: string }) {
         Đăng nhập
       </SubmitButton>
       <Typography variant="body2" color="text.secondary">
-        Chưa có tài khoản? Liên hệ quản trị viên để được cấp quyền truy cập.
+        Chưa có tài khoản?{' '}
+        <MuiLink
+          component={Link}
+          href={redirectTo ? `/register?redirect=${encodeURIComponent(redirectTo)}` : '/register'}
+        >
+          Đăng ký ngay
+        </MuiLink>
       </Typography>
     </Stack>
   );

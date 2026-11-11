@@ -9,12 +9,13 @@ export const metadata: Metadata = { title: 'Đăng nhập' };
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ redirect?: string | string[] }>;
+  searchParams: Promise<{ redirect?: string | string[]; registered?: string }>;
 }) {
-  const raw = (await searchParams).redirect;
+  const params = await searchParams;
+  const raw = params.redirect;
   const redirectTo = safeRedirect(Array.isArray(raw) ? raw[0] : raw) ?? undefined;
   // Đã đăng nhập thì không hiện lại form, đưa về đúng khu vực theo vai trò.
   const user = await currentUser();
   if (user) redirect(postLoginTarget(user, redirectTo));
-  return <LoginView redirectTo={redirectTo} />;
+  return <LoginView redirectTo={redirectTo} registered={params.registered === '1'} />;
 }

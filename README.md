@@ -56,11 +56,13 @@ Routes chỉ kết nối HTTP với logic nghiệp vụ. UI không import server
 | GET /api/users         | Danh sách user, search/sort/pagination | Admin                                 |
 | POST /api/users        | Tạo user với email/name/password/role  | Admin                                 |
 
-POST requests yêu cầu header Origin bằng APP_URL, kể cả khi gọi bằng curl hoặc Postman. Password tạo user tối thiểu 12 ký tự. Không có public signup. User được lưu trong Neo4j với constraint email/id unique, mật khẩu băm scrypt có salt. Chỉ public fields được trả về client.
+POST requests yêu cầu header Origin bằng APP_URL, kể cả khi gọi bằng curl hoặc Postman. Password tạo user tối thiểu 12 ký tự. Người dùng có thể đăng ký tại `/register` qua `POST /api/auth/register` với họ tên, email, mật khẩu và xác nhận mật khẩu. Tài khoản tự đăng ký luôn có quyền `user`; thành công chuyển sang đăng nhập, email trùng trả 409. Redis giới hạn đăng ký 5 lần/email và 20 lần/IP (hoặc nhóm local khi không có IP) trong 15 phút. User được lưu trong Neo4j với constraint email/id unique, mật khẩu băm scrypt có salt. Chỉ public fields được trả về client.
 
 Access JWT sống 1 giờ, refresh token opaque sống 7 ngày. Cookie HttpOnly, SameSite=Lax, Secure trong production. Redis chỉ lưu hash refresh token và user ID. Rotation dùng Lua compare-and-set để hai request không cùng dùng một token cũ. Mỗi rotation cấp TTL 7 ngày mới (sliding session). Logout revoke ngay session, access token của session đó không còn hợp lệ. Mỗi request protected kiểm tra Redis và đọc role hiện tại từ Neo4j.
 
 ## UI foundation
+
+Khi chạy `next dev` với `APP_URL` là địa chỉ loopback, kiểm tra Origin chấp nhận các tên `localhost`, `127.0.0.1` và `[::1]` có cùng giao thức và cổng. Production vẫn yêu cầu Origin khớp chính xác `APP_URL`.
 
 MUI + Emotion, Zustand, React Hook Form + Zod và Sonner đã được tích hợp. Trang public `/`, khám phá `/explore`, login `/login`, workspace `/dashboard`, admin `/admin`, bảng user `/admin/users`, tạo user `/admin/users/create`, trang mẫu `/admin/components`.
 
@@ -69,6 +71,14 @@ Hồ sơ `/profile` hỗ trợ sửa tên/điện thoại/giới thiệu và đ�
 Xem [docs/ui-foundation.md](docs/ui-foundation.md) cho API các component Table, toolbar, pagination, card, badge, form, dialog và layout. `src/lib/theme.ts` quản lý theme chung; Zustand chỉ giữ trạng thái UI, không lưu token hoặc credentials.
 
 ## Database và phạm vi
+
+### Ảnh địa điểm
+
+Admin có thể chọn nhiều ảnh JPG, PNG, WebP từ máy hoặc thêm URL HTTP/HTTPS. Mỗi địa điểm có tối đa 20 ảnh, mỗi file tối đa 5 MB. Album hỗ trợ xem trước, đổi thứ tự, chọn ảnh bìa (ảnh đầu tiên), gỡ ảnh khỏi danh sách; lưu địa điểm để áp dụng thay đổi. Ảnh bìa hiển thị trên thẻ địa điểm và album hiển thị tại trang chi tiết.
+
+`POST /api/uploads` nhận một file multipart tên `file`, yêu cầu cùng origin và quyền admin. Máy chủ kiểm tra dữ liệu ảnh thực, giới hạn 40 triệu điểm ảnh, xoay theo EXIF, thu gọn tối đa 2400 × 2400 và chuyển WebP. Redis giới hạn 60 yêu cầu upload/admin/15 phút. File lưu tại `data/uploads` (hoặc `UPLOAD_DIR`); MongoDB chỉ giữ đường dẫn `/api/uploads/<uuid>.webp`. API đọc ảnh công khai, chỉ nhận tên UUID hợp lệ. URL ảnh bên ngoài không được máy chủ tải về.
+
+Thư mục upload được bỏ qua trong Git và giữ nguyên khi restart app. Khi deploy nhiều instance hoặc hosting có ổ đĩa tạm thời, cần mount ổ bền vững dùng chung hoặc thay bằng object storage; sao lưu thư mục ảnh cùng dữ liệu. Gỡ ảnh khỏi album không xóa file vật lý để tránh làm hỏng địa điểm khác đang dùng chung ảnh. Ảnh đã tải lên nhưng chưa lưu địa điểm cũng còn trên ổ đĩa.
 
 Neo4j + Redis chạy mặc định. MongoDB được chuẩn bị trong profile `travel`, Cassandra trong `analytics`:
 

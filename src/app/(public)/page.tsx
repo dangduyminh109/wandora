@@ -37,6 +37,7 @@ async function getLandingData(): Promise<PublicHomeProps> {
         ratingAvg: doc.ratingAvg || 0,
         ratingCount: doc.ratingCount || 0,
         tags: Array.isArray(doc.tags) ? doc.tags : [],
+        images: Array.isArray(doc.images) ? doc.images : [],
       })),
     };
   } catch (error) {

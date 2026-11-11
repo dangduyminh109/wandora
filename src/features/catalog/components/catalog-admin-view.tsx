@@ -12,6 +12,7 @@ import { api } from '@/lib/api-client';
 import { catalogConfigs, serviceTypeLabels, type CatalogKind } from '../form-config';
 import { CatalogFormDialog, type EditableItem } from './catalog-form-dialog';
 import { PlaceAutocomplete, type PlaceOption } from './place-autocomplete';
+import { EntityThumbnail } from '@/features/places/components/entity-thumbnail';
 
 type Row = EditableItem & { name: string; slug: string; priceLevel: number } & Record<
     string,
@@ -93,6 +94,30 @@ export function CatalogAdminView({ kind }: { kind: CatalogKind }) {
   }, [config.endpoint, query, requestKey]);
 
   const columns: TableColumn<Row>[] = [
+    {
+      id: 'images',
+      label: 'Ảnh',
+      width: 112,
+      render: (row) => (
+        <Stack spacing={0.5}>
+          <EntityThumbnail
+            images={
+              Array.isArray(row.images)
+                ? row.images.filter((image): image is string => typeof image === 'string')
+                : []
+            }
+            name={row.name}
+          />
+          {Array.isArray(row.images) &&
+            Array.isArray(row.illustrativeImages) &&
+            row.images.some((image) => (row.illustrativeImages as unknown[]).includes(image)) && (
+              <Box component="span" sx={{ typography: 'caption', color: 'text.secondary' }}>
+                Ảnh minh họa
+              </Box>
+            )}
+        </Stack>
+      ),
+    },
     {
       id: 'name',
       label: config.title,

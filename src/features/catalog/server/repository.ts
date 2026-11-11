@@ -14,6 +14,7 @@ export type CatalogItem<T extends { name: string; placeId: string }> = T & {
   slug: string;
   createdAt: string;
   updatedAt: string;
+  illustrativeImages?: string[];
 };
 
 export type CatalogRepository<T extends { name: string; placeId: string }> = ReturnType<

@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   Container,
+  InputAdornment,
   MenuItem,
   Pagination,
   Skeleton,
@@ -9,6 +10,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import { MagnifyingGlassIcon } from '@phosphor-icons/react';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ErrorState } from '@/components/ui/error-state';
 import { PageHeader } from '@/components/ui/page-header';
@@ -109,80 +111,90 @@ export function ExploreView() {
         description="Tìm điểm đến theo tên, mô tả, thẻ; lọc theo danh mục, khu vực và đánh giá."
       />
 
-      <Stack
-        direction={{ xs: 'column', md: 'row' }}
-        spacing={2}
-        sx={{ mb: 3, alignItems: { md: 'center' } }}
-      >
-        <TextField
-          label="Tìm kiếm"
-          placeholder="Nhập tên, mô tả hoặc thẻ…"
-          value={search}
-          disabled={amenityActive}
-          onChange={(e) => setSearch(e.target.value)}
-          sx={{ flex: 2 }}
-        />
-        <TextField
-          select
-          label="Danh mục"
-          value={category}
-          onChange={(e) => change(() => setCategory(e.target.value))}
-          sx={{ flex: 1, minWidth: 150 }}
-        >
-          <MenuItem value="">Tất cả</MenuItem>
-          {placeCategories.map((item) => (
-            <MenuItem key={item.value} value={item.value}>
-              {item.label}
-            </MenuItem>
-          ))}
-        </TextField>
-        <TextField
-          select
-          label="Khu vực"
-          value={region}
-          onChange={(e) => change(() => setRegion(e.target.value))}
-          sx={{ flex: 1, minWidth: 150 }}
-        >
-          <MenuItem value="">Tất cả</MenuItem>
-          {regions.map((item) => (
-            <MenuItem key={item} value={item}>
-              {item}
-            </MenuItem>
-          ))}
-        </TextField>
-        <TextField
-          select
-          label="Đánh giá từ"
-          value={minRating}
-          onChange={(e) => change(() => setMinRating(e.target.value))}
-          sx={{ flex: 1, minWidth: 130 }}
-        >
-          <MenuItem value="0">Tất cả</MenuItem>
-          <MenuItem value="4.5">★ 4.5 trở lên</MenuItem>
-          <MenuItem value="4">★ 4.0 trở lên</MenuItem>
-          <MenuItem value="3">★ 3.0 trở lên</MenuItem>
-        </TextField>
-        <TextField
-          select
-          label="Sắp xếp"
-          value={sortBy}
-          disabled={amenityActive}
-          onChange={(e) => change(() => setSortBy(e.target.value))}
-          sx={{ flex: 1, minWidth: 150 }}
-        >
-          {sortOptions.map((item) => (
-            <MenuItem key={item.value} value={item.value}>
-              {item.label}
-            </MenuItem>
-          ))}
-        </TextField>
-      </Stack>
-
       <AmenitySearchPanel
         category={category}
         region={region}
         minRating={minRating}
         onActiveChange={setAmenityActive}
+        filters={
+          <Stack
+            direction={{ xs: 'column', md: 'row' }}
+            spacing={2}
+            sx={{ alignItems: { md: 'center' } }}
+          >
+            <TextField
+              label="Tìm kiếm"
+              placeholder="Nhập tên, mô tả hoặc thẻ…"
+              value={search}
+              disabled={amenityActive}
+              onChange={(e) => setSearch(e.target.value)}
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <MagnifyingGlassIcon size={18} color="#64748b" />
+                    </InputAdornment>
+                  ),
+                },
+              }}
+              sx={{ flex: 2 }}
+            />
+            <TextField
+              select
+              label="Danh mục"
+              value={category}
+              onChange={(e) => change(() => setCategory(e.target.value))}
+              sx={{ flex: 1, minWidth: 150 }}
+            >
+              <MenuItem value="">Tất cả</MenuItem>
+              {placeCategories.map((item) => (
+                <MenuItem key={item.value} value={item.value}>
+                  {item.label}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              select
+              label="Khu vực"
+              value={region}
+              onChange={(e) => change(() => setRegion(e.target.value))}
+              sx={{ flex: 1, minWidth: 150 }}
+            >
+              <MenuItem value="">Tất cả</MenuItem>
+              {regions.map((item) => (
+                <MenuItem key={item} value={item}>
+                  {item}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              select
+              label="Đánh giá từ"
+              value={minRating}
+              onChange={(e) => change(() => setMinRating(e.target.value))}
+              sx={{ flex: 1, minWidth: 130 }}
+            >
+              <MenuItem value="0">Tất cả</MenuItem>
+              <MenuItem value="4.5">★ 4.5 trở lên</MenuItem>
+              <MenuItem value="4">★ 4.0 trở lên</MenuItem>
+              <MenuItem value="3">★ 3.0 trở lên</MenuItem>
+            </TextField>
+            <TextField
+              select
+              label="Sắp xếp"
+              value={sortBy}
+              disabled={amenityActive}
+              onChange={(e) => change(() => setSortBy(e.target.value))}
+              sx={{ flex: 1, minWidth: 150 }}
+            >
+              {sortOptions.map((item) => (
+                <MenuItem key={item.value} value={item.value}>
+                  {item.label}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Stack>
+        }
       />
 
       {amenityActive ? null : error && resolvedKey === requestKey ? (
@@ -195,7 +207,7 @@ export function ExploreView() {
           {loading && result.places.length === 0 ? (
             <PlaceGrid>
               {Array.from({ length: 6 }, (_, i) => (
-                <Skeleton key={i} variant="rounded" height={180} />
+                <Skeleton key={i} variant="rounded" height={420} />
               ))}
             </PlaceGrid>
           ) : result.places.length === 0 ? (

@@ -56,18 +56,25 @@ async function personalizedFromGraph(
     // Bước A: Thử lọc cộng tác (Collaborative Filtering dựa trên User có sở thích tương tự)
     const cfResult = await session.run(
       `
-      MATCH (me:User {id: $userId})-[r1:LIKED|RATED]->(p:Place)<-[r2:LIKED|RATED]-(other:User)-[r3:LIKED|RATED]->(rec:Place)
-      WHERE other.id <> $userId AND NOT (me)-[:LIKED|RATED]->(rec)
-      WITH rec, count(DISTINCT other) AS score
+      MATCH (me:User {id: $userId})-[r1:LIKED|RATED|VIEWED]->(p:Place)<-[r2:LIKED|RATED|VIEWED]-(other:User)
+      WHERE other.id <> $userId
+        AND (type(r1) <> 'RATED' OR r1.rating >= 4)
+        AND (type(r2) <> 'RATED' OR r2.rating >= 4)
+      WITH me, other, count(DISTINCT p) AS overlap
+      MATCH (other)-[r3:LIKED|RATED|VIEWED]->(rec:Place)
+      WHERE NOT (me)-[:LIKED|RATED|VIEWED]->(rec)
+        AND (type(r3) <> 'RATED' OR r3.rating >= 4)
+      WITH rec, other, overlap, max(CASE type(r3) WHEN 'LIKED' THEN 3 WHEN 'RATED' THEN 2 ELSE 1 END) AS strength
+      WITH rec, sum(overlap * strength) AS score
       RETURN rec.id AS id, score
-      ORDER BY score DESC, rec.ratingAvg DESC
+      ORDER BY score DESC, rec.ratingAvg DESC, rec.id ASC
       LIMIT $limit
       `,
       { userId, limit: int(limit) },
     );
 
     let candidateIds = cfResult.records.map((r) => r.get('id') as string);
-    if (candidateIds.length >= Math.min(4, limit)) {
+    if (candidateIds.length > 0) {
       return {
         places: await hydratePlaces(candidateIds),
         strategy: 'collaborative',
@@ -80,7 +87,7 @@ async function personalizedFromGraph(
     const interestResult = await session.run(
       `
       MATCH (me:User {id: $userId})-[s:SEARCHED_FOR]->(a:Amenity)<-[:HAS_AMENITY]-(rec:Place)
-      WHERE NOT (me)-[:LIKED|RATED]->(rec)
+      WHERE NOT (me)-[:LIKED|RATED|VIEWED]->(rec)
       WITH rec, sum(CASE WHEN s.count > 5 THEN 5 ELSE s.count END) AS interest
       RETURN rec.id AS id, interest + coalesce(rec.ratingAvg, 0) / 5.0 AS score
       ORDER BY score DESC, rec.ratingAvg DESC
@@ -99,10 +106,11 @@ async function personalizedFromGraph(
     // Bước C: Thử gợi ý theo nội dung (Content-based dựa trên Category và Region đã thích/đánh giá)
     const cbResult = await session.run(
       `
-      MATCH (me:User {id: $userId})-[r:LIKED|RATED]->(p:Place)-[:IN_CATEGORY]->(c:Category)<-[:IN_CATEGORY]-(rec:Place)
-      WHERE NOT (me)-[:LIKED|RATED]->(rec)
+      MATCH (me:User {id: $userId})-[r:LIKED|RATED|VIEWED]->(p:Place)-[:IN_CATEGORY]->(c:Category)<-[:IN_CATEGORY]-(rec:Place)
+      WHERE NOT (me)-[:LIKED|RATED|VIEWED]->(rec)
+        AND (type(r) <> 'RATED' OR r.rating >= 4)
       OPTIONAL MATCH (rec)-[:LOCATED_IN]->(reg:Region)<-[:LOCATED_IN]-(p)
-      WITH rec, (count(DISTINCT c) + count(DISTINCT reg) * 2 + coalesce(rec.ratingAvg, 0)) AS score
+      WITH rec, (count(DISTINCT p) * 3 + count(DISTINCT reg) * 2 + coalesce(rec.ratingAvg, 0)) AS score
       RETURN rec.id AS id, score
       ORDER BY score DESC, rec.ratingAvg DESC
       LIMIT $limit

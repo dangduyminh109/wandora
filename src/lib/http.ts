@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { ZodError } from 'zod';
 import { getEnv } from '@/config/env';
+import { isAllowedOrigin } from './request-origin';
 export class HttpError extends Error {
   constructor(
     public status: number,
@@ -10,7 +11,14 @@ export class HttpError extends Error {
   }
 }
 export function assertSameOrigin(request: Request) {
-  if (request.headers.get('origin') !== new URL(getEnv().APP_URL).origin)
+  if (
+    !isAllowedOrigin(
+      request.headers.get('origin'),
+      getEnv().APP_URL,
+      request.url,
+      process.env.NODE_ENV === 'development',
+    )
+  )
     throw new HttpError(403, 'Yêu cầu không hợp lệ.');
 }
 export async function parseJson(request: Request) {

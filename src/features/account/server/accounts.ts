@@ -20,6 +20,17 @@ export async function updateProfile(actor: User, input: z.output<typeof profileS
     return publicUser(result.records[0].get('u').properties);
   });
 }
+export async function updateAvatar(actor: User, avatar: string) {
+  return accountTransaction(async (tx) => {
+    const user = await transactionUser(tx, actor.id);
+    if (user.status === 'locked') throw new HttpError(401, 'Tài khoản đã bị khóa.');
+    const result = await tx.run('MATCH (u:User {id: $id}) SET u.avatar = $avatar RETURN u', {
+      id: actor.id,
+      avatar,
+    });
+    return publicUser(result.records[0].get('u').properties);
+  });
+}
 export async function changePassword(actor: User, input: z.output<typeof changePasswordSchema>) {
   const rateKey = `wandora:change-password:${actor.id}`;
   const redis = await getRedis();

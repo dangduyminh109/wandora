@@ -6,7 +6,8 @@ import { Box, Button, Container, Divider, Stack, Typography } from '@mui/materia
 import { Brand } from './brand';
 import { SmoothScroll } from '../common/smooth-scroll';
 import { api } from '@/lib/api-client';
-import { homeForRole } from '@/features/auth/routes';
+import { AccountMenu } from './account-menu';
+import type { User } from '@/types/user';
 
 const HEADER_HEIGHT = 64; // px
 const isHeroRoute = (pathname: string) => pathname === '/';
@@ -15,7 +16,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const hero = isHeroRoute(pathname);
   const [heroScrolled, setHeroScrolled] = useState(false);
-  const [currentUser, setCurrentUser] = useState<{ name: string; role: string } | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   useEffect(() => {
     if (!hero) return;
@@ -27,7 +28,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     let active = true;
-    api<{ user: { name: string; role: string } }>('/api/auth/me')
+    api<{ user: User }>('/api/auth/me')
       .then((data) => {
         if (active) setCurrentUser(data.user);
       })
@@ -77,6 +78,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
             <Box
               sx={{
                 color: headerSolid ? 'text.primary' : '#fff',
+                '& .MuiTypography-root': { display: { xs: 'none', sm: 'block' } },
                 '& a': { color: 'inherit !important' },
                 transition: 'color 0.25s',
               }}
@@ -90,7 +92,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
               component="nav"
               aria-label="Điều hướng chính"
               sx={{
-                display: { xs: 'none', md: 'flex' },
+                display: 'flex',
                 gap: 1,
                 alignItems: 'center',
               }}
@@ -141,6 +143,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
                     variant="text"
                     size="small"
                     sx={{
+                      display: { xs: 'none', md: 'inline-flex' },
                       color: headerSolid ? '#334155' : 'rgba(255,255,255,0.9)',
                       fontWeight: 600,
                       fontSize: '.875rem',
@@ -163,6 +166,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
                   variant="text"
                   size="small"
                   sx={{
+                    display: { xs: 'none', md: 'inline-flex' },
                     color: headerSolid ? '#334155' : 'rgba(255,255,255,0.9)',
                     fontWeight: 600,
                     fontSize: '.875rem',
@@ -182,27 +186,19 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
 
             <Box component="nav" aria-label="Tài khoản">
               {currentUser ? (
-                <Button
-                  component={Link}
-                  href={homeForRole(currentUser.role as 'admin' | 'user')}
-                  variant={headerSolid ? 'contained' : 'outlined'}
-                  size="small"
-                  sx={
-                    !headerSolid
-                      ? {
-                          color: '#fff',
-                          borderColor: 'rgba(255,255,255,0.6)',
-                          '&:hover': { borderColor: '#fff', bgcolor: 'rgba(255,255,255,0.12)' },
-                        }
-                      : { px: 2.5 }
-                  }
-                >
-                  {currentUser.role === 'admin' ? 'Trang quản trị' : 'Không gian của bạn'}
-                </Button>
+                <AccountMenu
+                  user={currentUser}
+                  light={!headerSolid}
+                  onLoggedOut={() => setCurrentUser(null)}
+                />
               ) : pathname !== '/login' ? (
                 <Button
                   component={Link}
-                  href="/login"
+                  href={
+                    pathname.startsWith('/explore')
+                      ? `/login?redirect=${encodeURIComponent(pathname)}`
+                      : '/login'
+                  }
                   variant={headerSolid ? 'contained' : 'outlined'}
                   size="small"
                   sx={
@@ -242,25 +238,29 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
       </Box>
 
       {/* ── FOOTER ── */}
-      <Box component="footer" sx={{ bgcolor: 'background.default' }}>
-        <Divider />
-        <Container maxWidth="lg">
-          <Stack
-            direction={{ xs: 'column', sm: 'row' }}
-            sx={{ py: 4, gap: 3, alignItems: { sm: 'center' }, justifyContent: 'space-between' }}
-          >
-            <Box sx={{ color: 'text.primary' }}>
-              <Brand />
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                Khám phá và quản lý những hành trình đáng nhớ.
+      {pathname !== '/login' && (
+        <Box component="footer" sx={{ bgcolor: 'background.default' }}>
+          <Divider />
+          <Container maxWidth="lg">
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              sx={{ py: 4, gap: 3, alignItems: { sm: 'center' }, justifyContent: 'space-between' }}
+            >
+              <Box sx={{ color: 'text.primary' }}>
+                <Brand />
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  Khám phá và quản lý những hành trình đáng nhớ.
+                </Typography>
+              </Box>
+              <Typography variant="body2" color="text.secondary">
+                © 2025 Wandora · Nhóm 404
+                {' · '}
+                <Link href="/image-credits.html">Nguồn ảnh</Link>
               </Typography>
-            </Box>
-            <Typography variant="body2" color="text.secondary">
-              © 2025 Wandora · Nhóm 404
-            </Typography>
-          </Stack>
-        </Container>
-      </Box>
+            </Stack>
+          </Container>
+        </Box>
+      )}
     </Box>
   );
 }

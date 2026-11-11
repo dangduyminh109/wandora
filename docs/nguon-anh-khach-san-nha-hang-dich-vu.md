@@ -1,0 +1,12 @@
+# Nguồn ảnh minh họa
+
+Ảnh minh họa cho dữ liệu demo, không xác thực cơ sở kinh doanh. Ảnh đã đổi kích thước và chuyển WebP, giữ giấy phép gốc. Tour/vé sử dụng ảnh của địa điểm tương ứng; xem thêm `nguon-anh-dia-diem.md`.
+
+- **File:Vietnam-0136 - My Room (3380772188).jpg**: Dennis G. Jarvis; CC BY-SA 2.0. [Nguồn](<https://commons.wikimedia.org/wiki/File:Vietnam-0136_-_My_Room_(3380772188).jpg>) · [Giấy phép](https://creativecommons.org/licenses/by-sa/2.0)
+- **File:Khu nghỉ dưỡng ở Cái Bè (Nhà, nội thất bên trong, phòng ngủ) (1).jpg**: Phương Huy; CC BY-SA 4.0. [Nguồn](<https://commons.wikimedia.org/wiki/File:Khu_ngh%E1%BB%89_d%C6%B0%E1%BB%A1ng_%E1%BB%9F_C%C3%A1i_B%C3%A8_(Nh%C3%A0,_n%E1%BB%99i_th%E1%BA%A5t_b%C3%AAn_trong,_ph%C3%B2ng_ng%E1%BB%A7)_(1).jpg>) · [Giấy phép](https://creativecommons.org/licenses/by-sa/4.0)
+- **File:Khu nghỉ dưỡng ở Cái Bè (Nhà, nội thất bên trong, phòng ngủ) (2).jpg**: Phương Huy; CC BY-SA 4.0. [Nguồn](<https://commons.wikimedia.org/wiki/File:Khu_ngh%E1%BB%89_d%C6%B0%E1%BB%A1ng_%E1%BB%9F_C%C3%A1i_B%C3%A8_(Nh%C3%A0,_n%E1%BB%99i_th%E1%BA%A5t_b%C3%AAn_trong,_ph%C3%B2ng_ng%E1%BB%A7)_(2).jpg>) · [Giấy phép](https://creativecommons.org/licenses/by-sa/4.0)
+- **File:Bún chả Hàng Mành.jpg**: Larry; CC BY-SA 2.0. [Nguồn](https://commons.wikimedia.org/wiki/File:B%C3%BAn_ch%E1%BA%A3_H%C3%A0ng_M%C3%A0nh.jpg) · [Giấy phép](https://creativecommons.org/licenses/by-sa/2.0)
+- **File:Hmong specialities restaurant in Ha Giang city in 2014 01.jpg**: Vuong Tri Binh; CC BY-SA 4.0. [Nguồn](https://commons.wikimedia.org/wiki/File:Hmong_specialities_restaurant_in_Ha_Giang_city_in_2014_01.jpg) · [Giấy phép](https://creativecommons.org/licenses/by-sa/4.0)
+- **File:CARGO CLUB RESTAURANT HOI AN VIETNAM JAN 2012 (7057229295).jpg**: calflier001; CC BY-SA 2.0. [Nguồn](<https://commons.wikimedia.org/wiki/File:CARGO_CLUB_RESTAURANT_HOI_AN_VIETNAM_JAN_2012_(7057229295).jpg>) · [Giấy phép](https://creativecommons.org/licenses/by-sa/2.0)
+- **File:Vinasun Toyota Innova.jpg**: shankar s. from Dubai, united arab emirates; CC BY 2.0. [Nguồn](https://commons.wikimedia.org/wiki/File:Vinasun_Toyota_Innova.jpg) · [Giấy phép](https://creativecommons.org/licenses/by/2.0)
+- **File:Retro Scooter in Vietnamese Cafe.jpg**: Lemic302; CC0. [Nguồn](https://commons.wikimedia.org/wiki/File:Retro_Scooter_in_Vietnamese_Cafe.jpg) · [Giấy phép](http://creativecommons.org/publicdomain/zero/1.0/deed.en)

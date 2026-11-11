@@ -22,7 +22,8 @@
     "db:init-cassandra": "tsx --env-file=.env.local scripts/init-cassandra.ts",
     "test:activity": "tsx --env-file=.env.local scripts/smoke-activity.ts",
     "db:sync-neo4j": "tsx --env-file=.env.local scripts/sync-places-neo4j.ts",
-    "db:seed-interactions": "tsx --conditions react-server --env-file=.env.local scripts/seed-interactions.ts"
+    "db:seed-interactions": "tsx --conditions react-server --env-file=.env.local scripts/seed-demo.ts",
+    "db:mine-activity": "tsx --conditions react-server --env-file=.env.local scripts/mine-activity.ts"
   },
   "dependencies": {
     "@emotion/cache": "^11.14.0",
@@ -45,6 +46,7 @@
     "react-hook-form": "^7.89.0",
     "redis": "^5.0.0",
     "server-only": "^0.0.1",
+    "sharp": "^0.35.5",
     "sonner": "^2.0.8",
     "zod": "^4.0.0",
     "zustand": "^5.0.15"

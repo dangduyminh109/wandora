@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { objectIdSchema } from '@/lib/mongo-id';
+import { imageListSchema } from '@/features/places/image-policy';
 
 const nonEmpty = (value: object) => Object.keys(value).length > 0;
 const EMPTY_UPDATE = 'Cần ít nhất một trường để cập nhật.';
@@ -16,6 +17,7 @@ const base = {
   address,
   phone,
   website,
+  images: imageListSchema,
 };
 
 // --- Khách sạn ---
@@ -26,6 +28,7 @@ const hotelFields = {
 };
 export const hotelInputSchema = z.object({
   ...hotelFields,
+  images: imageListSchema.default([]),
   address: address.default(''),
   phone: phone.default(''),
   website: website.default(''),
@@ -42,6 +45,7 @@ const restaurantFields = {
 };
 export const restaurantInputSchema = z.object({
   ...restaurantFields,
+  images: imageListSchema.default([]),
   address: address.default(''),
   phone: phone.default(''),
   website: website.default(''),
@@ -63,6 +67,7 @@ const serviceFields = {
 };
 export const serviceInputSchema = z.object({
   ...serviceFields,
+  images: imageListSchema.default([]),
   address: address.default(''),
   phone: phone.default(''),
   website: website.default(''),

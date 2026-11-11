@@ -18,6 +18,7 @@ export function publicUser(user: StoredUser): User {
     status: user.status ?? 'active',
     phone: user.phone ?? '',
     bio: user.bio ?? '',
+    avatar: user.avatar ?? '',
   };
 }
 export async function findUser(field: 'email' | 'id', value: string): Promise<StoredUser | null> {

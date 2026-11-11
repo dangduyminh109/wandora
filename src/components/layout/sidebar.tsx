@@ -38,7 +38,6 @@ export const SIDEBAR_COLLAPSED_WIDTH = 80;
 
 export function Sidebar({
   admin = false,
-  isAdmin = admin,
   footer,
   compactFooter,
 }: {
@@ -58,19 +57,20 @@ export function Sidebar({
   const links = admin
     ? [
         { href: '/admin', label: 'Tổng quan', icon: HouseIcon },
-        { href: '/admin/users', label: 'Người dùng', icon: UsersIcon },
         { href: '/admin/places', label: 'Địa điểm', icon: MapPinIcon },
         { href: '/admin/hotels', label: 'Khách sạn', icon: BedIcon },
         { href: '/admin/restaurants', label: 'Nhà hàng', icon: ForkKnifeIcon },
         { href: '/admin/services', label: 'Dịch vụ', icon: TicketIcon },
+        { href: '/admin/users', label: 'Người dùng', icon: UsersIcon },
+        { href: '/explore', label: 'Về khám phá', icon: MagnifyingGlassIcon },
+        { href: '/dashboard', label: 'Không gian cá nhân', icon: CompassIcon },
       ]
     : [
-        ...(isAdmin ? [{ href: '/admin', label: 'Trang quản trị', icon: HouseIcon }] : []),
+        { href: '/dashboard', label: 'Tổng quan', icon: CompassIcon },
         { href: '/explore', label: 'Khám phá', icon: MagnifyingGlassIcon },
         { href: '/favorites', label: 'Yêu thích', icon: HeartIcon },
-        { href: '/dashboard', label: 'Không gian cá nhân', icon: CompassIcon },
+        { href: '/activity', label: 'Đã xem gần đây', icon: ClockCounterClockwiseIcon },
         { href: '/profile', label: 'Tài khoản', icon: UserCircleIcon },
-        { href: '/activity', label: 'Lịch sử hoạt động', icon: ClockCounterClockwiseIcon },
       ];
 
   function content(mini: boolean, mobile: boolean) {

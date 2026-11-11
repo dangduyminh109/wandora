@@ -1,4 +1,5 @@
 'use client';
+import { EntityThumbnail } from '@/features/places/components/entity-thumbnail';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -6,7 +7,6 @@ import {
   Alert,
   Box,
   Button,
-  Chip,
   Grid,
   IconButton,
   Paper,
@@ -30,9 +30,7 @@ import {
   ArrowRightIcon,
   ArrowClockwiseIcon,
   StarIcon,
-  CheckCircleIcon,
   CompassIcon,
-  DatabaseIcon,
 } from '@phosphor-icons/react';
 import { PageHeader } from '@/components/ui/page-header';
 import { Badge } from '@/components/ui/badge';
@@ -265,49 +263,6 @@ export function AdminOverview() {
         })}
       </Grid>
 
-      {/* ── DATABASE STATUS & ARCHITECTURE ── */}
-      <Paper variant="outlined" sx={{ p: 3, mb: 4, borderRadius: 3, bgcolor: '#f8fafc' }}>
-        <Stack
-          direction={{ xs: 'column', md: 'row' }}
-          sx={{ gap: 2.5, alignItems: { md: 'center' }, justifyContent: 'space-between' }}
-        >
-          <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center' }}>
-            <Box sx={{ p: 1, borderRadius: 2, bgcolor: '#07598514', color: '#075985' }}>
-              <DatabaseIcon size={22} weight="duotone" />
-            </Box>
-            <Box>
-              <Typography sx={{ fontWeight: 700, fontSize: '.9375rem', color: '#163047' }}>
-                Cấu trúc đa cơ sở dữ liệu (Polyglot Persistence)
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Hệ thống vận hành song song 4 CSDL chuyên biệt đảm bảo hiệu năng và tính toàn vẹn.
-              </Typography>
-            </Box>
-          </Stack>
-          <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 1.5 }}>
-            {[
-              { name: 'MongoDB', role: 'Dữ liệu danh mục & Geospatial' },
-              { name: 'Neo4j', role: 'Đồ thị quan hệ & Phân quyền' },
-              { name: 'Redis', role: 'Cache tốc độ cao (TTL 5m)' },
-              { name: 'Cassandra', role: 'Lịch sử hoạt động (90 ngày)' },
-            ].map((db) => (
-              <Chip
-                key={db.name}
-                icon={<CheckCircleIcon size={14} weight="fill" color="#10b981" />}
-                label={`${db.name}: ${db.role}`}
-                variant="outlined"
-                sx={{
-                  bgcolor: '#fff',
-                  fontSize: '.75rem',
-                  fontWeight: 600,
-                  color: '#334155',
-                  borderColor: '#cbd5e1',
-                }}
-              />
-            ))}
-          </Stack>
-        </Stack>
-      </Paper>
 
       {/* ── RECENT PLACES PREVIEW TABLE ── */}
       <Paper variant="outlined" sx={{ borderRadius: 3, overflow: 'hidden' }}>
@@ -374,7 +329,10 @@ export function AdminOverview() {
                   >
                     <TableCell>
                       <Typography sx={{ fontWeight: 600, color: '#163047' }}>
-                        {place.name}
+                        <Stack direction="row" sx={{ alignItems: 'center', gap: 2 }}>
+                          <EntityThumbnail images={place.images} name={place.name} />
+                          {place.name}
+                        </Stack>
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
                         /{place.slug}

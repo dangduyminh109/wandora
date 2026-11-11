@@ -8,12 +8,26 @@ import { PageHeader } from '@/components/ui/page-header';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { api } from '@/lib/api-client';
 import type { User } from '@/types/user';
-import { Alert, Button, Stack } from '@mui/material';
+import { Alert, Avatar, Button, Stack } from '@mui/material';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { EditUserDialog } from './edit-user-dialog';
 const columns: TableColumn<User>[] = [
+  {
+    id: 'avatar',
+    label: 'Ảnh',
+    width: 64,
+    render: (row) => (
+      <Avatar
+        src={row.avatar || undefined}
+        alt={row.name}
+        sx={{ width: 40, height: 40, bgcolor: 'primary.main', fontSize: '.875rem' }}
+      >
+        {row.name ? row.name.charAt(0).toUpperCase() : 'U'}
+      </Avatar>
+    ),
+  },
   { id: 'name', label: 'Họ tên', sortable: true, render: (row) => row.name },
   { id: 'email', label: 'Email', sortable: true, render: (row) => row.email },
   {

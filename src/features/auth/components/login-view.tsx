@@ -2,6 +2,7 @@
 import { Box, Stack, Typography } from '@mui/material';
 import { MapPinIcon, BedIcon, ForkKnifeIcon, ShieldCheckIcon } from '@phosphor-icons/react';
 import { LoginForm } from './login-form';
+import { RegisterForm } from './register-form';
 
 const highlights = [
   { icon: MapPinIcon, text: 'Quản lý địa điểm du lịch' },
@@ -33,7 +34,16 @@ function GridPattern() {
   );
 }
 
-export function LoginView({ redirectTo }: { redirectTo?: string }) {
+export function LoginView({
+  redirectTo,
+  mode = 'login',
+  registered = false,
+}: {
+  redirectTo?: string;
+  mode?: 'login' | 'register';
+  registered?: boolean;
+}) {
+  const registering = mode === 'register';
   return (
     <Box sx={{ display: 'flex', minHeight: 'calc(100dvh - 64px)' }}>
       {/* ── LEFT PANEL: visual/brand ── */}
@@ -182,17 +192,19 @@ export function LoginView({ redirectTo }: { redirectTo?: string }) {
               letterSpacing: '-0.01em',
             }}
           >
-            Chào mừng trở lại
+            {registering ? 'Tạo tài khoản Wandora' : 'Chào mừng trở lại'}
           </Typography>
           <Typography color="text.secondary" sx={{ mt: 1.5, mb: 5, lineHeight: 1.6 }}>
-            Đăng nhập để tiếp tục hành trình của bạn.
+            {registering
+              ? 'Lưu điểm đến yêu thích và khám phá gợi ý dành cho bạn.'
+              : 'Đăng nhập để tiếp tục hành trình của bạn.'}
           </Typography>
 
-          <LoginForm redirectTo={redirectTo} />
-
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 5, textAlign: 'center' }}>
-            Chưa có tài khoản? Liên hệ quản trị viên để được cấp quyền truy cập.
-          </Typography>
+          {registering ? (
+            <RegisterForm redirectTo={redirectTo} />
+          ) : (
+            <LoginForm redirectTo={redirectTo} registered={registered} />
+          )}
         </Box>
       </Box>
     </Box>

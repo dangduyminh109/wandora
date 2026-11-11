@@ -7,9 +7,7 @@ import {
   Alert,
   Box,
   Button,
-  Card as MuiCard,
-  CardActionArea,
-  CardContent,
+  Chip,
   Grid,
   InputAdornment,
   Paper,
@@ -20,8 +18,6 @@ import {
 } from '@mui/material';
 import {
   MagnifyingGlassIcon,
-  StarIcon,
-  MapPinIcon,
   ArrowRightIcon,
   ClockCounterClockwiseIcon,
   UserCircleIcon,
@@ -30,11 +26,9 @@ import {
   BankIcon,
   BuildingsIcon,
 } from '@phosphor-icons/react';
-import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { FavoriteButton } from '@/features/places/components/favorite-button';
+import { PlaceCard } from '@/features/places/components/place-card';
 import { api } from '@/lib/api-client';
-import { categoryLabel } from '@/features/places/constants';
 import type { Place } from '@/features/places/types';
 import type { User } from '@/types/user';
 
@@ -168,11 +162,24 @@ export function DashboardView({ user }: { user: User }) {
         >
           <Box sx={{ maxWidth: 580 }}>
             <Stack direction="row" sx={{ alignItems: 'center', gap: 1.5, mb: 1.5 }}>
-              <Badge
+              <Chip
                 label={user.role === 'admin' ? 'Quản trị viên' : 'Thành viên'}
-                color="secondary"
+                size="small"
+                sx={{
+                  bgcolor:
+                    user.role === 'admin'
+                      ? 'rgba(56, 189, 248, 0.22)'
+                      : 'rgba(255, 255, 255, 0.16)',
+                  color: user.role === 'admin' ? '#7dd3fc' : '#ffffff',
+                  border: `1px solid ${
+                    user.role === 'admin' ? 'rgba(56, 189, 248, 0.5)' : 'rgba(255, 255, 255, 0.35)'
+                  }`,
+                  fontWeight: 700,
+                  fontSize: '.75rem',
+                  letterSpacing: '0.02em',
+                }}
               />
-              <Typography sx={{ fontSize: '.875rem', color: 'rgba(255,255,255,0.75)' }}>
+              <Typography sx={{ fontSize: '.875rem', color: 'rgba(255,255,255,0.85)' }}>
                 {user.email}
               </Typography>
             </Stack>
@@ -352,99 +359,7 @@ export function DashboardView({ user }: { user: User }) {
           ) : stats?.recommendedPlaces.length ? (
             stats.recommendedPlaces.map((place) => (
               <Grid key={place.id} size={{ xs: 12, sm: 6, md: 4 }}>
-                <MuiCard
-                  variant="outlined"
-                  sx={{
-                    borderRadius: 3,
-                    height: '100%',
-                    transition: 'transform 0.2s, box-shadow 0.2s',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: '0 12px 30px rgba(7,89,133,0.1)',
-                      borderColor: '#075985',
-                    },
-                  }}
-                >
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end', px: 2, pt: 1 }}>
-                    <FavoriteButton placeId={place.id} size="small" />
-                  </Box>
-                  <CardActionArea
-                    component={Link}
-                    href={`/explore/${place.slug}`}
-                    sx={{
-                      p: 3,
-                      height: '100%',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'stretch',
-                    }}
-                  >
-                    <Stack
-                      direction="row"
-                      sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}
-                    >
-                      <Badge label={categoryLabel(place.category)} />
-                      <Stack direction="row" sx={{ alignItems: 'center', gap: 0.5 }}>
-                        <StarIcon size={16} color="#f59e0b" weight="fill" />
-                        <Typography sx={{ fontWeight: 700, fontSize: '.875rem', color: '#163047' }}>
-                          {place.ratingCount > 0 ? place.ratingAvg.toFixed(1) : 'Mới'}
-                        </Typography>
-                        {place.ratingCount > 0 && (
-                          <Typography variant="caption" color="text.secondary">
-                            ({place.ratingCount})
-                          </Typography>
-                        )}
-                      </Stack>
-                    </Stack>
-
-                    <Typography variant="h4" sx={{ fontWeight: 700, color: '#163047', mb: 0.75 }}>
-                      {place.name}
-                    </Typography>
-
-                    <Stack direction="row" sx={{ alignItems: 'center', gap: 0.5, mb: 1.5 }}>
-                      <MapPinIcon size={16} color="#075985" />
-                      <Typography variant="body2" sx={{ color: '#075985', fontWeight: 500 }}>
-                        {place.region}
-                      </Typography>
-                    </Stack>
-
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{
-                        lineHeight: 1.6,
-                        flexGrow: 1,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {place.description || 'Chưa có mô tả chi tiết.'}
-                    </Typography>
-
-                    {place.tags && place.tags.length > 0 && (
-                      <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 0.75, mt: 2 }}>
-                        {place.tags.slice(0, 3).map((tag) => (
-                          <Box
-                            key={tag}
-                            sx={{
-                              px: 1,
-                              py: 0.25,
-                              borderRadius: 1.5,
-                              bgcolor: '#f1f5f9',
-                              fontSize: '.75rem',
-                              color: '#475569',
-                              fontWeight: 500,
-                            }}
-                          >
-                            #{tag}
-                          </Box>
-                        ))}
-                      </Stack>
-                    )}
-                  </CardActionArea>
-                </MuiCard>
+                <PlaceCard place={place} showTags />
               </Grid>
             ))
           ) : (
@@ -470,42 +385,7 @@ export function DashboardView({ user }: { user: User }) {
             }}
           >
             {stats.trendingPlaces.slice(0, 3).map((place) => (
-              <MuiCard key={place.id} variant="outlined" sx={{ position: 'relative' }}>
-                <Box sx={{ position: 'absolute', top: 14, right: 14, zIndex: 2 }}>
-                  <FavoriteButton placeId={place.id} size="small" />
-                </Box>
-                <CardActionArea
-                  component={Link}
-                  href={`/explore/${place.slug}`}
-                  sx={{ height: '100%' }}
-                >
-                  <CardContent sx={{ p: 2.5 }}>
-                    <Stack
-                      direction="row"
-                      sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 1, pr: 4.5 }}
-                    >
-                      <Badge label={categoryLabel(place.category)} />
-                      <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
-                        <StarIcon size={15} weight="fill" color="#eab308" />
-                        <Typography variant="caption" sx={{ fontWeight: 600 }}>
-                          {place.ratingAvg ? place.ratingAvg.toFixed(1) : 'Mới'}
-                        </Typography>
-                      </Stack>
-                    </Stack>
-                    <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 0.5 }}>
-                      {place.name}
-                    </Typography>
-                    <Stack
-                      direction="row"
-                      spacing={0.5}
-                      sx={{ alignItems: 'center', color: 'text.secondary' }}
-                    >
-                      <MapPinIcon size={14} />
-                      <Typography variant="caption">{place.region}</Typography>
-                    </Stack>
-                  </CardContent>
-                </CardActionArea>
-              </MuiCard>
+              <PlaceCard key={place.id} place={place} compact />
             ))}
           </Box>
         </Card>
@@ -531,12 +411,10 @@ export function DashboardView({ user }: { user: User }) {
             </Box>
             <Box>
               <Typography sx={{ fontWeight: 700, fontSize: '1.05rem', color: '#163047' }}>
-                Lịch sử hành trình & hoạt động
+                Đã xem gần đây
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {stats?.searchCount
-                  ? `Bạn đã thực hiện ${stats.searchCount} lượt tương tác trong 7 ngày qua. Lịch sử được lưu trữ bảo mật trên Cassandra.`
-                  : 'Lưu trữ các từ khóa tìm kiếm và điểm đến bạn đã xem trong vòng 90 ngày.'}
+                Tìm lại những điểm đến bạn đã khám phá và tiếp tục lên kế hoạch cho chuyến đi.
               </Typography>
             </Box>
           </Stack>
@@ -547,7 +425,7 @@ export function DashboardView({ user }: { user: User }) {
             endIcon={<ArrowRightIcon size={16} />}
             sx={{ flexShrink: 0, borderRadius: 2 }}
           >
-            Xem lịch sử chi tiết
+            Xem lại địa điểm
           </Button>
         </Stack>
       </Paper>

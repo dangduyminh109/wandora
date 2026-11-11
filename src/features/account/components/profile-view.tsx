@@ -14,6 +14,7 @@ import { SubmitButton } from '@/components/forms/submit-button';
 import { api } from '@/lib/api-client';
 import type { User } from '@/types/user';
 import { changePasswordSchema, profileSchema } from '../schemas';
+import { AvatarField } from './avatar-field';
 function ProfileForm({ user }: { user: User }) {
   const router = useRouter();
   const {
@@ -173,6 +174,9 @@ export function ProfileView({ user }: { user: User }) {
         }}
       >
         <Card title="Hồ sơ cá nhân">
+          <Box sx={{ mb: 3 }}>
+            <AvatarField user={user} />
+          </Box>
           <ProfileForm user={user} />
         </Card>
         <Card title="Đổi mật khẩu">

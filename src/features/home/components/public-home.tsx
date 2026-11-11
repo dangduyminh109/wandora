@@ -1,4 +1,5 @@
 'use client';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Box, Button, Container, Grid, Stack, Typography, Avatar } from '@mui/material';
 import {
@@ -14,7 +15,8 @@ import {
   CompassIcon,
   ArrowDownIcon,
 } from '@phosphor-icons/react';
-import { categoryLabel } from '@/features/places/constants';
+import { api } from '@/lib/api-client';
+import { PlaceCard } from '@/features/places/components/place-card';
 
 export interface PublicHomeProps {
   stats?: {
@@ -33,6 +35,7 @@ export interface PublicHomeProps {
     ratingAvg: number;
     ratingCount: number;
     tags: string[];
+    images: string[];
   }>;
 }
 
@@ -208,6 +211,24 @@ function Step({ num, title, desc }: { num: string; title: string; desc: string }
 
 /* ─── Main component ─── */
 export function PublicHome({ stats, featuredPlaces }: PublicHomeProps = {}) {
+  const [currentUser, setCurrentUser] = useState<unknown | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    api<{ user: unknown }>('/api/auth/me')
+      .then((data) => {
+        if (active) setCurrentUser(data.user);
+      })
+      .catch(() => {
+        if (active) setCurrentUser(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const loggedIn = Boolean(currentUser);
+
   return (
     <>
       {/* ══════════════════ HERO ══════════════════ */}
@@ -334,7 +355,7 @@ export function PublicHome({ stats, featuredPlaces }: PublicHomeProps = {}) {
               <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ mt: 4.5, gap: 2 }}>
                 <Button
                   component={Link}
-                  href="/login"
+                  href={loggedIn ? '/explore' : '/login'}
                   variant="contained"
                   size="large"
                   endIcon={<ArrowRightIcon size={18} />}
@@ -354,7 +375,7 @@ export function PublicHome({ stats, featuredPlaces }: PublicHomeProps = {}) {
                     },
                   }}
                 >
-                  Đăng nhập ngay
+                  {loggedIn ? 'Khám phá ngay' : 'Đăng nhập ngay'}
                 </Button>
                 <Button
                   href="#features"
@@ -622,6 +643,7 @@ export function PublicHome({ stats, featuredPlaces }: PublicHomeProps = {}) {
                 fontWeight: 800,
                 color: '#163047',
                 letterSpacing: '-0.01em',
+                lineHeight: { xs: 1.3, md: 1.25 },
               }}
             >
               Mọi thứ bạn cần,
@@ -707,6 +729,7 @@ export function PublicHome({ stats, featuredPlaces }: PublicHomeProps = {}) {
                   fontWeight: 800,
                   color: '#163047',
                   letterSpacing: '-0.01em',
+                  lineHeight: { xs: 1.3, md: 1.25 },
                 }}
               >
                 Điểm đến hàng đầu Việt Nam
@@ -723,117 +746,7 @@ export function PublicHome({ stats, featuredPlaces }: PublicHomeProps = {}) {
             <Grid container spacing={3}>
               {featuredPlaces.map((place) => (
                 <Grid key={place.id} size={{ xs: 12, sm: 6, md: 4 }}>
-                  <Box
-                    sx={{
-                      p: 3.5,
-                      height: '100%',
-                      borderRadius: 4,
-                      border: '1px solid #e2ecf3',
-                      bgcolor: '#fff',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
-                      '&:hover': {
-                        transform: 'translateY(-4px)',
-                        boxShadow: '0 16px 36px rgba(7,89,133,0.1)',
-                        borderColor: '#075985',
-                      },
-                    }}
-                  >
-                    <Stack
-                      direction="row"
-                      sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 2 }}
-                    >
-                      <Box
-                        sx={{
-                          px: 1.5,
-                          py: 0.5,
-                          borderRadius: 2,
-                          bgcolor: 'rgba(7,89,133,0.08)',
-                          color: '#075985',
-                          fontSize: '.75rem',
-                          fontWeight: 600,
-                        }}
-                      >
-                        {categoryLabel(place.category)}
-                      </Box>
-                      <Stack direction="row" sx={{ alignItems: 'center', gap: 0.5 }}>
-                        <StarIcon size={16} color="#f59e0b" weight="fill" />
-                        <Typography sx={{ fontWeight: 700, fontSize: '.875rem', color: '#163047' }}>
-                          {place.ratingCount > 0 ? place.ratingAvg.toFixed(1) : 'Mới'}
-                        </Typography>
-                        {place.ratingCount > 0 && (
-                          <Typography variant="caption" color="text.secondary">
-                            ({place.ratingCount})
-                          </Typography>
-                        )}
-                      </Stack>
-                    </Stack>
-
-                    <Typography variant="h4" sx={{ fontWeight: 700, color: '#163047', mb: 1 }}>
-                      {place.name}
-                    </Typography>
-
-                    <Stack direction="row" sx={{ alignItems: 'center', gap: 0.5, mb: 1.5 }}>
-                      <MapPinIcon size={16} color="#075985" />
-                      <Typography variant="body2" sx={{ color: '#075985', fontWeight: 600 }}>
-                        {place.region}
-                      </Typography>
-                    </Stack>
-
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{
-                        lineHeight: 1.7,
-                        flexGrow: 1,
-                        mb: 2.5,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {place.description || 'Chưa có mô tả chi tiết.'}
-                    </Typography>
-
-                    {place.tags && place.tags.length > 0 && (
-                      <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 0.75, mb: 3 }}>
-                        {place.tags.slice(0, 3).map((tag) => (
-                          <Box
-                            key={tag}
-                            sx={{
-                              px: 1,
-                              py: 0.25,
-                              borderRadius: 1.5,
-                              bgcolor: '#f1f5f9',
-                              fontSize: '.75rem',
-                              color: '#475569',
-                              fontWeight: 500,
-                            }}
-                          >
-                            #{tag}
-                          </Box>
-                        ))}
-                      </Stack>
-                    )}
-
-                    <Button
-                      component={Link}
-                      href={`/login?redirect=/explore/${place.slug}`}
-                      variant="outlined"
-                      size="small"
-                      endIcon={<ArrowRightIcon size={14} />}
-                      sx={{
-                        mt: 'auto',
-                        borderRadius: 2,
-                        fontWeight: 600,
-                        alignSelf: 'flex-start',
-                      }}
-                    >
-                      Xem chi tiết điểm đến
-                    </Button>
-                  </Box>
+                  <PlaceCard place={place} showFavorite={false} showTags />
                 </Grid>
               ))}
             </Grid>
@@ -841,13 +754,15 @@ export function PublicHome({ stats, featuredPlaces }: PublicHomeProps = {}) {
             <Box sx={{ textAlign: 'center', mt: 6 }}>
               <Button
                 component={Link}
-                href="/login?redirect=/explore"
+                href="/explore"
                 variant="contained"
                 size="large"
                 endIcon={<ArrowRightIcon size={18} />}
                 sx={{ px: 4, borderRadius: 2 }}
               >
-                Đăng nhập để khám phá tất cả {stats?.places || 68}+ địa điểm
+                {loggedIn
+                  ? `Khám phá tất cả ${stats?.places || 68}+ địa điểm`
+                  : `Đăng nhập để khám phá tất cả ${stats?.places || 68}+ địa điểm`}
               </Button>
             </Box>
           </Container>
@@ -881,6 +796,7 @@ export function PublicHome({ stats, featuredPlaces }: PublicHomeProps = {}) {
                   fontWeight: 800,
                   color: '#163047',
                   letterSpacing: '-0.01em',
+                  lineHeight: { xs: 1.3, md: 1.25 },
                   mb: 2,
                 }}
               >
@@ -892,12 +808,12 @@ export function PublicHome({ stats, featuredPlaces }: PublicHomeProps = {}) {
               </Typography>
               <Button
                 component={Link}
-                href="/login"
+                href={loggedIn ? '/dashboard' : '/login'}
                 variant="contained"
                 endIcon={<ArrowRightIcon size={16} />}
                 sx={{ mt: 4, borderRadius: 2 }}
               >
-                Bắt đầu ngay
+                {loggedIn ? 'Đến không gian cá nhân' : 'Bắt đầu ngay'}
               </Button>
             </Grid>
 
@@ -1017,8 +933,9 @@ export function PublicHome({ stats, featuredPlaces }: PublicHomeProps = {}) {
             Sẵn sàng bắt đầu hành trình?
           </Typography>
           <Typography sx={{ mt: 2.5, color: 'rgba(255,255,255,0.65)', lineHeight: 1.75 }}>
-            Đăng nhập để truy cập không gian cá nhân, quản lý địa điểm và khám phá những hành trình
-            mới.
+            {loggedIn
+              ? 'Truy cập không gian cá nhân để lưu lại những điểm đến yêu thích và tiếp tục hành trình.'
+              : 'Đăng nhập để truy cập không gian cá nhân, quản lý địa điểm và khám phá những hành trình mới.'}
           </Typography>
           <Stack
             direction={{ xs: 'column', sm: 'row' }}
@@ -1026,7 +943,7 @@ export function PublicHome({ stats, featuredPlaces }: PublicHomeProps = {}) {
           >
             <Button
               component={Link}
-              href="/login"
+              href={loggedIn ? '/dashboard' : '/login'}
               variant="contained"
               size="large"
               endIcon={<ArrowRightIcon size={18} />}
@@ -1039,7 +956,7 @@ export function PublicHome({ stats, featuredPlaces }: PublicHomeProps = {}) {
                 '&:hover': { bgcolor: '#e0f2fe' },
               }}
             >
-              Đăng nhập Wandora
+              {loggedIn ? 'Vào không gian của bạn' : 'Đăng nhập Wandora'}
             </Button>
           </Stack>
           <Typography sx={{ mt: 3, color: 'rgba(255,255,255,0.3)', fontSize: '.8125rem' }}>

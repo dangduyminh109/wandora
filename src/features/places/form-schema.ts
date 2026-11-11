@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { Place } from './types';
+import { imageListSchema, splitImageSources } from './image-policy';
 
 const inRange = (value: string, min: number, max: number) => {
   const number = Number(value.replace(',', '.'));
@@ -24,7 +25,13 @@ export const placeFormSchema = z.object({
     .min(1, 'Nhập kinh độ.')
     .refine((value) => inRange(value, -180, 180), 'Kinh độ phải là số từ -180 đến 180.'),
   tags: z.string().trim(),
-  images: z.string().trim(),
+  images: z
+    .string()
+    .trim()
+    .refine(
+      (value) => imageListSchema.safeParse(splitImageSources(value)).success,
+      'Dùng tối đa 20 ảnh hợp lệ (JPG, PNG, WebP tải lên hoặc URL http/https).',
+    ),
 });
 
 export type PlaceFormValues = z.infer<typeof placeFormSchema>;
